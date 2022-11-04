@@ -1,6 +1,6 @@
 # The C∞ Programming Language
 
-<img src="./C∞.png" alt="C∞" height=179 width=179 />
+<img src="./C∞.png" alt="C∞" height=168 width=168 />
 
 ```C
 ft main(): void

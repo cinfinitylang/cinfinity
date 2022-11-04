@@ -12,19 +12,19 @@ ft main(): void
 
     println("!")
 
-    spin salute as c: char { // Print: Hello
+    spin salute as c: char { // Print: "Hello"
         print(c)
     }
 
-    ↻ salute as c: char {    // Print: Hello
+    ↻ salute as c: char {    // Print: "Hello"
         print(c)
     }
 
-    ↺ salute as c: char {    // Print: olleH
+    ↺ salute as c: char {    // Print: "olleH"
         print(c)
     }
 
-    spin 100 { // Print 100 times: Hi, plus newline
+    spin 100 { // Print 100 times: "Hi\n"
         println("Hi")
     }
 

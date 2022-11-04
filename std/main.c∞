@@ -1,0 +1,50 @@
+use std::c::stdio
+use std::cpp
+
+// 'main' function (start program)
+ft main(): void
+{
+    salute: str = "Hello"
+
+    printf("%s", salute) // 'std::c::stdio'
+
+    iostream::cout(" world") // 'std::cpp::iostream'
+
+    println("!")
+
+    spin salute as c: str { // Print: Hello
+        print(c)
+    }
+
+    ↻ salute as c: str {    // Print: Hello
+        print(c)
+    }
+
+    ↺ salute as c: str {    // Print: olleH
+        print(c)
+    }
+
+    spin 100 { // Print 100 times: Hi, plus newline
+        println("Hi")
+    }
+
+    c: char = 'C'
+    sensor c {
+        'A' {
+            println("Letter is A")
+        }
+
+        'B' {
+            println("Letter is B")
+        }
+
+        'C' {
+            println("Letter is C")
+        }
+
+        // Others (default)
+        {
+            println("Unexpected letter")
+        }
+    }
+}

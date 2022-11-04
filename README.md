@@ -1,5 +1,4 @@
-# C∞
-The C∞ Programming Language
+# The C∞ Programming Language
 
 ```C
 ft main(): void

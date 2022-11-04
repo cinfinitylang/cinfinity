@@ -6,21 +6,21 @@ ft main(): void
 {
     salute: str = "Hello"
 
-    printf("%s", salute) // 'std::c::stdio'
+    printf("%s", salute)     // 'std::c::stdio'
 
     iostream::cout(" world") // 'std::cpp::iostream'
 
     println("!")
 
-    spin salute as c: str { // Print: Hello
+    spin salute as c: char { // Print: Hello
         print(c)
     }
 
-    ↻ salute as c: str {    // Print: Hello
+    ↻ salute as c: char {    // Print: Hello
         print(c)
     }
 
-    ↺ salute as c: str {    // Print: olleH
+    ↺ salute as c: char {    // Print: olleH
         print(c)
     }
 
@@ -29,7 +29,7 @@ ft main(): void
     }
 
     c: char = 'C'
-    sensor c {
+    match c {
         'A' {
             println("Letter is A")
         }

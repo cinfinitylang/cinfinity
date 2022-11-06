@@ -1,9 +1,20 @@
-use std::c::stdio
+use std::c::stdio as cstdio
 use std::cpp
+use scan::token as tok
+
+type regex {
+    ft match(src: str = "", expr: str = ""): bool
+    {
+        return std::regex::match(src, expr); // ';' optional, at the end of line or file
+    }
+}
 
 // 'main' function (start program)
 ft main(): void
 {
+    // Print in console in compile-time, with the keyword 'pre' at the begin of function: 'pre_print()'
+    pre_println()
+
     salute: str = "Hello"
 
     printf("%s", salute)     // 'std::c::stdio'
@@ -47,4 +58,9 @@ ft main(): void
             println("Unexpected letter")
         }
     }
+}
+
+pre ft pre_println(): void
+{
+    println("Hello compile-time!")
 }

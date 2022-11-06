@@ -5,6 +5,6 @@
 ```C
 ft main(): void
 {
-    println("Hello world!")
+    print("Hello world!".n)
 }
 ```

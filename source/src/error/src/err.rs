@@ -30,14 +30,14 @@ impl Error {
     // Show error (message / diagnosis) and stop all
     pub fn abort(&self, msg: &str) {
         let mut err_token_pos: u64 = (self.linenum.to_string().len() as u64) +
-            self.charnum.clone()+2; // 3 (+2, +1 in charnum-1) = '|| ' → '|10| ..'
-                                    //                            ↑↑↑ --→ ↑--↑↑
+            self.charnum.clone()+3; // 4 (+3, +1 in charnum-1) = ' |  ' → ' 10 | ..'
+                                    //                            ↑↑↑↑ --→ ↑--↑↑↑
 
-        // Line 1: 'error → path/file' //
+        // Line 1: 'error | path/file' //
         let mut fmt_err: String = self.path.clone() + "\n";
         
-        // Line 2: '|2| error line' //
-        fmt_err = format!("{}|{}| ", fmt_err,
+        // Line 2: ' 2 | error line' //
+        fmt_err = format!("{} {} | ", fmt_err,
             self.linenum);
 
         let mut err_file: Script = Script::new();

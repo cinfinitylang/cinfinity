@@ -1,10 +1,10 @@
 use super::table::Table;
 
 pub struct Token {
-    pub u8     id;
-    pub String val;
-    pub u64    linenum;
-    pub u64    charnum;
+    pub id:      u8,
+    pub val:     String,
+    pub linenum: u64,
+    pub charnum: u64,
 }
 
 impl Token {

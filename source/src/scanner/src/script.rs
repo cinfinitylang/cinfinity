@@ -1,8 +1,10 @@
-pub struct Script {
-    String content;
+use std::fs;
 
-    pub u64    linenum;
-    pub u64    charnum;
+pub struct Script {
+    content: String,
+
+    pub linenum: u64,
+    pub charnum: u64,
 }
 
 impl Script {
@@ -23,9 +25,9 @@ impl Script {
 
     // Read all content of file
     pub fn read_file(&mut self, path: &String) {
-        self.content = fs::read_to_string(path);
+        self.content = fs::read_to_string(path).unwrap();
     }
 
-    pub fn contains(&self)             { !self.content.is_empty() }
+    pub fn contains(&self)     -> bool { !self.content.is_empty() }
     pub fn get_char(&mut self) -> char { self.content.remove(0)   }
 }

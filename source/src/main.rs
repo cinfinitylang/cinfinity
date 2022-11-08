@@ -1,3 +1,9 @@
+use scanner::{
+    scanner,
+};
+
 fn main() {
-    println!("Hello, world!");
+    let mut file: Script = Script::new();
+
+    while scanner(&mut file) {}
 }

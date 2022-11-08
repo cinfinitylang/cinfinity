@@ -5,6 +5,7 @@ pub enum Table {
 
     // Types (values) //
     Num,     // 100
+    NumDec,  // 100.0
     Str,     // ".."
     Strchar, // '..'
 
@@ -18,17 +19,22 @@ pub enum Table {
 
     // Symbols //
     Division,       // /
+    Colon,          // :
     Semicolon,      // ;
     Multiplication, // *
+    Dot,            // .
+    Comma,          // ,
 
     // Others //
-    AutoSemicolon, // ;
+    AutoSemicolon,      // ;
+    NamespaceSeparator, // ::
     
     Space,
     CmtOneline,   // //..
     CmtMultiline, // /*..*/
 
     // Illegals //
-    IllegalCmtMultiline, // /*..
+    IllegalUnfCmtMultiline, // /*..
+    IllegalUnfStrchar,      // '..
     Illegal,
 }

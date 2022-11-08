@@ -4,8 +4,8 @@ use scan::token as tok
 
 /* Script of C∞ */
 
-type regex {
-    ft match(src: str = "", expr: str = ""): bool
+type regex {         // ↓ optional (assignment), default initialized types
+    ft match(src: str = "", expr: str): bool
     {
         return std::regex::match(src, expr); // ';' optional, at the end of line or file
     }
@@ -37,7 +37,7 @@ ft main(): void
         print(c)
     }
 
-    spin 100 { // Print 100 times: "Hi\n"
+    spin 100. { // Print 100 times: "Hi\n"
         print("Hi".n)
     }
 
@@ -64,5 +64,5 @@ ft main(): void
 
 pre: ft pre_println(): void
 {
-    print("Hello compile-time!".n)
+    print("Hello compile-time!.n)
 }

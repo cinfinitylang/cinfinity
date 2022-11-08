@@ -3,14 +3,19 @@ use super::{
     token::Token,
     table::Table,
 };
+use error::{
+    err::Error,
+};
 
 // Get next token in file (with mode)
-pub fn scan_file(file: &mut Script, token: &mut Token) -> bool {
+pub fn scan_file(file: &mut Script, token: &mut Token, errlang: &mut Error) -> bool {
     
-    while get_token(file, token) {
+    while get_token(file, token, errlang) {
         // Skip token(s) - (comments, ..)
-        if  token.id == Table::CmtOneline as u8 ||
-            token.id == Table::CmtMultiline as u8 { continue; }
+        if token.id == Table::CmtOneline as u8 ||
+           token.id == Table::CmtMultiline as u8 {
+            continue;
+        }
 
         return true;
     }
@@ -18,7 +23,7 @@ pub fn scan_file(file: &mut Script, token: &mut Token) -> bool {
 }
 
 // Get next token in file (get all tokens)
-pub fn get_token(file: &mut Script, token: &mut Token) -> bool {
+pub fn get_token(file: &mut Script, token: &mut Token, errlang: &mut Error) -> bool {
     let mut c: char;
 
     while file.contains() {
@@ -86,11 +91,49 @@ pub fn get_token(file: &mut Script, token: &mut Token) -> bool {
 
                     match c {
                         // Continuation of number
-                        '0'..='9' | '.' => { token.val.push(file.get_char()); },
+                        '0'..='9' => { token.val.push(file.get_char()); },
                         
                         // End of number
                         _ => { return true; },
                     }
+                }
+            },
+
+            // Token: string (double: "..")
+            '"' => {
+                token.id = Table::Str as u8; token.val = String::from(c);
+
+                while file.contains() {
+                    c = file.see_char();
+
+                    match c {
+                        // End of string
+                        '"' => {
+                            token.val.push(file.get_char());
+                            return true;
+                        },
+                        
+                        // Continuation of string
+                        _ => { token.val.push(file.get_char()); },
+                    }
+                }
+
+                // Error: unfinished string ("..")
+                errlang.abort("unfinished string");
+            },
+
+            // Token: string (single: '..')
+            '\'' => {
+                token.id = Table::IllegalUnfStrchar as u8; token.val = String::from(c);
+
+                // Content (1 character-only: grapheme support) of string ('..')
+                if file.contains() { token.val.push(file.get_char()); }
+
+                // End of string: ' → '..'
+                //                ↑ ---→ ↑
+                if file.contains() && file.see_char() == '\'' {
+                    token.id = Table::Strchar as u8;
+                    token.val.push(file.get_char());
                 }
             },
 
@@ -122,7 +165,7 @@ pub fn get_token(file: &mut Script, token: &mut Token) -> bool {
 
                 // Is: comment (multi-line: /*..*/)
                 } else if c == '*' {
-                    token.id = Table::IllegalCmtMultiline as u8;
+                    token.id = Table::IllegalUnfCmtMultiline as u8;
                     token.val.push(file.get_char());
 
                     while file.contains() {
@@ -151,8 +194,19 @@ pub fn get_token(file: &mut Script, token: &mut Token) -> bool {
 
             // Tokens //
 
-            ';' => { token.id = Table::Semicolon as u8;      token.val = String::from(c); },
+            ':' => {
+                token.id = Table::Colon as u8; token.val = String::from(c);
+
+                // Namespace separator: '::' → 'namespace::namespace::property'
+                if file.contains() && file.see_char() == ':' {
+                    token.id = Table::NamespaceSeparator as u8;
+                    token.val.push(file.get_char());
+                }
+            },
+            ';' => { token.id = Table::Semicolon      as u8; token.val = String::from(c); },
             '*' => { token.id = Table::Multiplication as u8; token.val = String::from(c); },
+            '.' => { token.id = Table::Dot            as u8; token.val = String::from(c); },
+            ',' => { token.id = Table::Comma          as u8; token.val = String::from(c); },
 
             // Token: illegal
             _ => {

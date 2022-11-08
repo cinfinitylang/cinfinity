@@ -28,7 +28,16 @@ impl Script {
         self.content = fs::read_to_string(path).unwrap();
     }
 
-    pub fn contains(&self)     -> bool { !self.content.is_empty()             }
-    pub fn get_char(&mut self) -> char { self.content.remove(0)               } // Advance file-position
+    // Advance file-position
+    pub fn get_char(&mut self) -> char {
+        let c: char = self.content.remove(0);
+
+        // Advance file-position
+        if c != '\n' { self.charnum += 1;                   }
+         else        { self.linenum += 1; self.charnum = 0; }
+
+        return c;
+    }
     pub fn see_char(&mut self) -> char { self.content.chars().next().unwrap() } // Not advance file-position
+    pub fn contains(&self)     -> bool { !self.content.is_empty()             }
 }

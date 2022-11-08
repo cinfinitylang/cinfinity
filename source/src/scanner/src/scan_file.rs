@@ -3,14 +3,11 @@ use super::{
     token::Token,
     table::Table,
 };
-use error::{
-    err::Error,
-};
 
 // Get next token in file (with mode)
-pub fn scan_file(file: &mut Script, token: &mut Token, errlang: &mut Error) -> bool {
+pub fn scan_file(file: &mut Script, token: &mut Token) -> bool {
     
-    while get_token(file, token, errlang) {
+    while get_token(file, token) {
         // Skip token(s) - (comments, ..)
         if token.id == Table::CmtOneline as u8 ||
            token.id == Table::CmtMultiline as u8 {
@@ -23,7 +20,7 @@ pub fn scan_file(file: &mut Script, token: &mut Token, errlang: &mut Error) -> b
 }
 
 // Get next token in file (get all tokens)
-pub fn get_token(file: &mut Script, token: &mut Token, errlang: &mut Error) -> bool {
+pub fn get_token(file: &mut Script, token: &mut Token) -> bool {
     let mut c: char;
 
     while file.contains() {
@@ -101,7 +98,7 @@ pub fn get_token(file: &mut Script, token: &mut Token, errlang: &mut Error) -> b
 
             // Token: string (double: "..")
             '"' => {
-                token.id = Table::Str as u8; token.val = String::from(c);
+                token.id = Table::IllegalUnfStr as u8; token.val = String::from(c);
 
                 while file.contains() {
                     c = file.see_char();
@@ -109,6 +106,7 @@ pub fn get_token(file: &mut Script, token: &mut Token, errlang: &mut Error) -> b
                     match c {
                         // End of string
                         '"' => {
+                            token.id = Table::Str as u8;
                             token.val.push(file.get_char());
                             return true;
                         },
@@ -117,9 +115,6 @@ pub fn get_token(file: &mut Script, token: &mut Token, errlang: &mut Error) -> b
                         _ => { token.val.push(file.get_char()); },
                     }
                 }
-
-                // Error: unfinished string ("..")
-                errlang.abort("unfinished string");
             },
 
             // Token: string (single: '..')

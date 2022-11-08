@@ -7,4 +7,5 @@ edition = "2021"
 [dependencies]
 
 scanner = { path = "src/scanner" }
+parser  = { path = "src/parser"  }
 error   = { path = "src/error"   }

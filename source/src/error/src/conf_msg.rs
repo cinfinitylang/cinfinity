@@ -7,7 +7,7 @@ macro_rules! conf_message {
 
             // Get error message and show
             if let Some(err) = err_info.payload().downcast_ref::<String>() {
-                eprintln!("{} | {}", err_prefix, err);
+                eprintln!("{} → {}", err_prefix, err);
 
             // Show default message (if ↑ fails)
             } else {

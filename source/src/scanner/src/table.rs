@@ -35,6 +35,7 @@ pub enum Table {
 
     // Illegals //
     IllegalUnfCmtMultiline, // /*..
+    IllegalUnfStr,          // "..
     IllegalUnfStrchar,      // '..
     Illegal,
 }

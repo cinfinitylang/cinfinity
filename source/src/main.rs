@@ -1,10 +1,8 @@
 use scanner::{
-    scan_file::{
-        scan_file,
-    },
-
     script::Script,
-    token::Token,
+};
+use parser::{
+    parser_file::parser_file,
 };
 use error::{
     conf_message,
@@ -20,11 +18,8 @@ fn main() {
 
     let mut file: Script = Script::new();
      file.read_file(&path);
-    let mut token: Token = Token::new();
     let mut errlang: Error = Error::new();
      errlang.path = path.clone();
 
-    while scan_file(&mut file, &mut token, &mut errlang) {
-        //print!("[{}]", token.val);
-    }
+    parser_file(&mut file, &mut errlang);
 }

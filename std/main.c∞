@@ -21,7 +21,7 @@ ft main(): void
 
     iostream::cout(" world") // 'std::cpp::iostream'
 
-    println("!")
+    print("!".n)
 
     spin salute as c: char { // Print: "Hello"
         print(c)
@@ -36,31 +36,31 @@ ft main(): void
     }
 
     spin 100 { // Print 100 times: "Hi\n"
-        println("Hi")
+        print("Hi".n)
     }
 
     c: char = 'C'
     match c {
         'A' {
-            println("Letter is A")
+            print("Letter is A".n)
         }
 
         'B' {
-            println("Letter is B")
+            print("Letter is B".n)
         }
 
         'C' {
-            println("Letter is C")
+            print("Letter is C".n)
         }
 
         // Others (default)
         {
-            println("Unexpected letter")
+            print("Unexpected letter".n)
         }
     }
 }
 
-pre ft pre_println(): void
+pre: ft pre_println(): void
 {
-    println("Hello compile-time!")
+    print("Hello compile-time!".n)
 }

@@ -1,21 +1,165 @@
-use super::script::Script;
-
-// Scan mode's
-pub const SCAN_CLEAN:  bool = true;
-pub const SCAN_GETALL: bool = false;
+use super::{
+    script::Script,
+    token::Token,
+    table::Table,
+};
 
 // Get next token in file (with mode)
-pub fn scan_file(file: &mut Script, mode: bool) -> bool {
-    while get_token(file) {
+pub fn scan_file(file: &mut Script, token: &mut Token) -> bool {
+    
+    while get_token(file, token) {
+        // Skip token(s) - (comments, ..)
+        if  token.id == Table::CmtOneline as u8 ||
+            token.id == Table::CmtMultiline as u8 { continue; }
+
         return true;
     }
     return false;
 }
 
 // Get next token in file (get all tokens)
-pub fn get_token(file: &mut Script) -> bool {
+pub fn get_token(file: &mut Script, token: &mut Token) -> bool {
+    let mut c: char;
+
     while file.contains() {
-        print!("[{}]", file.get_char());
+        c = file.get_char();
+        token.linenum = file.linenum; token.charnum = file.charnum;
+
+        match c {
+            // Token: whitespace
+            ' ' | '\t' | '\r' => {
+                token.id = Table::Space as u8; token.val = String::from(' ');
+
+                while file.contains() {
+                    c = file.see_char();
+
+                    match c {
+                        // United whitespaces
+                        ' ' | '\t' | '\r' => { file.get_char(); },
+                        
+                        // Other character
+                        _ => { return true; },
+                    }
+                }
+            },
+
+            // Token: newline → automatic semicolon: ';'
+            '\n' => {
+                token.id = Table::AutoSemicolon as u8; token.val = String::from(';');
+
+                while file.contains() {
+                    c = file.see_char();
+
+                    match c {
+                        // United newlines
+                        '\n' => { file.get_char(); },
+                        
+                        // Other character
+                        _ => { return true; },
+                    }
+                }
+            },
+
+            // Token: name
+            'a'..='z' | 'A'..='Z' | '_' => {
+                token.id = Table::Name as u8; token.val = String::from(c);
+
+                while file.contains() {
+                    c = file.see_char();
+
+                    match c {
+                        // Continuation of name
+                        'a'..='z' | 'A'..='Z' | '0'..='9' | '_' => { token.val.push(file.get_char()); },
+                        
+                        // End of name
+                        _ => { return true; },
+                    }
+                }
+            },
+
+            // Token: number
+            '0'..='9' => {
+                token.id = Table::Num as u8; token.val = String::from(c);
+
+                while file.contains() {
+                    c = file.see_char();
+
+                    match c {
+                        // Continuation of number
+                        '0'..='9' | '.' => { token.val.push(file.get_char()); },
+                        
+                        // End of number
+                        _ => { return true; },
+                    }
+                }
+            },
+
+            // Token: division '/' | comments ('//..' | '/*..*/')
+            '/' => {
+                token.id = Table::Division as u8; token.val = String::from(c);
+
+                // Is: '/' - (end of file, after of '/')
+                if !file.contains() { return true; }
+
+                c = file.see_char();
+
+                // Is: comment (one-line: //..)
+                if c == '/' {
+                    token.id = Table::CmtOneline as u8;
+                    file.get_char();
+
+                    while file.contains() {
+                        c = file.see_char();
+    
+                        match c {
+                            // End of comment (one-line)
+                            '\n' => { return true; },
+                            
+                            // Content of comment (one-line)
+                            _ => { file.get_char(); },
+                        }
+                    }
+
+                // Is: comment (multi-line: /*..*/)
+                } else if c == '*' {
+                    token.id = Table::IllegalCmtMultiline as u8;
+                    token.val.push(file.get_char());
+
+                    while file.contains() {
+                        c = file.see_char();
+    
+                        match c {
+                            // Possible: end of comment (multi-line) or content: '*' → /*..'*'..*/
+                            '*' => {
+                                token.val.push(file.get_char());
+
+                                // End of comment (multi-line: '*/')
+                                if file.contains() && file.see_char() == '/' {
+                                    token.id = Table::CmtMultiline as u8;
+                                    file.get_char(); return true;
+                                }
+                            },
+                            
+                            // Content of comment (multi-line)
+                            _ => { token.val.push(file.get_char()); },
+                        }
+                    }
+                
+                // Is: '/'
+                } else { return true; }
+            },
+
+            // Tokens //
+
+            ';' => { token.id = Table::Semicolon as u8;      token.val = String::from(c); },
+            '*' => { token.id = Table::Multiplication as u8; token.val = String::from(c); },
+
+            // Token: illegal
+            _ => {
+                token.id = Table::Illegal as u8; token.val = String::from(c);
+            },
+        }
+
         return true;
     }
     return false;

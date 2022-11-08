@@ -2,6 +2,8 @@ use std::c::stdio as cstdio
 use std::cpp
 use scan::token as tok
 
+/* Script of C∞ */
+
 type regex {
     ft match(src: str = "", expr: str = ""): bool
     {

@@ -64,5 +64,5 @@ ft main(): void
 
 pre: ft pre_println(): void
 {
-    print("Hello compile-time!.n)
+    print("Hello compile-time" + '!'.str.n);
 }

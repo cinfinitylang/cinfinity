@@ -45,9 +45,11 @@ struct error_t
     }
 
     // Throw problem (error | warning) - (message/diagnosis with format)
-    private: void problem(bool type_problem, std::string message = "")
+    private: void problem(bool type_problem = PROBLEM__ERROR, std::string message = "")
     {
-        COORD cursor_position;
+        COORD cursor_position_token, cursor_position_pleca;
+        CONSOLE_SCREEN_BUFFER_INFO console_info;
+
         std::uint_fast64_t prefix_size      = 0,
                            indent           = 0, i = 0,
                            line_number_size = std::to_string(self.line_number).size()+1; // +1 = space ' ',
@@ -131,6 +133,11 @@ struct error_t
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
+
+            // Get console-position of error token
+            GetConsoleScreenBufferInfo(win_console, &console_info);
+            cursor_position_pleca = console_info.dwCursorPosition;
+            cursor_position_pleca.X++; cursor_position_pleca.Y++;
         #endif
         std::cout << " | ";
 
@@ -171,10 +178,9 @@ struct error_t
 
                 // Get console-position of error token
                 #if defined(OS_WIN)
-                    CONSOLE_SCREEN_BUFFER_INFO console_info;
                     GetConsoleScreenBufferInfo(win_console, &console_info);
-                    cursor_position = console_info.dwCursorPosition;
-                    cursor_position.Y++;
+                    cursor_position_token = console_info.dwCursorPosition;
+                    cursor_position_token.Y++;
                 #endif
 
                 std::cout << error_scanner.token.value;
@@ -196,13 +202,39 @@ struct error_t
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
-            SetConsoleCursorPosition(win_console, cursor_position);
+            SetConsoleCursorPosition(win_console, cursor_position_pleca);
         #endif
-        std::cout << "^";
+        std::cout << "|";
+        #if defined(OS_WIN)
+            SetConsoleCursorPosition(win_console, cursor_position_token);
+        #endif
+        std::cout << "^ ";
+
+        // Is: warning
+        if (type_problem == PROBLEM__WARNING)
+        {
+            #if defined(OS_WIN)
+                SetConsoleTextAttribute(win_console, ERROR__COLOR__WARNING);
+            #endif
+        }
+        // Is: error
+        else
+        {
+            #if defined(OS_WIN)
+                SetConsoleTextAttribute(win_console, ERROR__COLOR__ERROR);
+            #endif
+        }
+        std::cout << self.char_number;
+
+        #if defined(OS_WIN)
+            SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
+        #endif
+        std::cout << " | ";
 
         // Reset to standard color (console)
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD);
         #endif
+        std::cout << message << "\n";
     }
 };

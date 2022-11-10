@@ -7,16 +7,21 @@
 
 #include "./table.h"
 
-class scanner_t
+struct scanner_t
 {
-    private: file_t  file;
-    public:  token_t token;
+    private: file_t file;
+    
+    public:
+    
+    token_t token;
 
-    public: scanner_t(void) = default;
-    public: scanner_t(std::string path, std::ios::openmode mode) { self.file.open(path, mode); }
+    scanner_t(void) = default;
+    scanner_t(std::string path, std::ios::openmode mode) { self.open(path, mode); }
+    void open(std::string path = "", std::ios::openmode mode
+        = std::fstream::in | std::fstream::out) { self.file.open(path, mode); }
 
     // Lexicographic analyzer - (1-file)
-    public: bool scan(void)
+    bool scan(void)
     {
         while (get_token())
         {
@@ -29,7 +34,7 @@ class scanner_t
     }
 
     // Get next token in file
-    public: bool get_token(void)
+    bool get_token(void)
     {
         char c;
         while (self.file.contains())

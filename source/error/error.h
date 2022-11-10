@@ -47,16 +47,19 @@ struct error_t
     // Throw problem (error | warning) - (message/diagnosis with format)
     private: void problem(bool type_problem = PROBLEM__ERROR, std::string message = "")
     {
-        COORD cursor_position_token, cursor_position_pleca;
         CONSOLE_SCREEN_BUFFER_INFO console_info;
+        COORD                      cursor_position_token, cursor_position_pleca;
+
+        // Format: line number, with space ' ' as thousands separator - ('100 000 000')
+        std::string fmt_line_number = self.thousands_separator(std::to_string(self.line_number));
 
         std::uint_fast64_t prefix_size      = 0,
                            indent           = 0, i = 0,
-                           line_number_size = std::to_string(self.line_number).size()+1; // +1 = space ' ',
-                                                                                         // at the beginning:
-                                                                                         // error  | path/file
-                                                                                         // ' '100 | error line
-                                                                                         //          ↑ 1: error message
+                           line_number_size = fmt_line_number.size()+1; // +1 = space ' ',
+                                                                        // at the beginning:
+                                                                        // error  | path/file
+                                                                        // ' '100 | error line
+                                                                        //          ↑ 1: error message
 
         // Line 1: 'error | path/file' //
 
@@ -66,7 +69,7 @@ struct error_t
             #if defined(OS_WIN)
                 SetConsoleTextAttribute(win_console, ERROR__COLOR__WARNING);
             #endif
-            std::cout << PREFIX__WARNING;
+            std::cerr << PREFIX__WARNING;
             prefix_size = std::string(PREFIX__WARNING).size(); // Size: "warning"
         }
         // Is: warning
@@ -75,7 +78,7 @@ struct error_t
             #if defined(OS_WIN)
                 SetConsoleTextAttribute(win_console, ERROR__COLOR__ERROR);
             #endif
-            std::cout << PREFIX__ERROR;
+            std::cerr << PREFIX__ERROR;
             prefix_size = std::string(PREFIX__ERROR).size(); // Size: "error"
         }
 
@@ -88,18 +91,18 @@ struct error_t
         else if (prefix_size < line_number_size)
         {
             indent = line_number_size - prefix_size;
-            for (i = 0; i < indent; ++i) { std::cout << " "; }
+            for (i = 0; i < indent; ++i) { std::cerr << " "; }
         }
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
         #endif
-        std::cout << " | ";
+        std::cerr << " | ";
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD);
         #endif
-        std::cout << self.path << "\n ";
+        std::cerr << self.path << "\n ";
 
         // Line 2: ' 10 | error line' //
 
@@ -107,7 +110,7 @@ struct error_t
         if (prefix_size > line_number_size)
         {
             indent = prefix_size - line_number_size;
-            for (i = 0; i < indent; ++i) { std::cout << " "; }
+            for (i = 0; i < indent; ++i) { std::cerr << " "; }
         }
         // Size: line number '100' (3), is less that 'error' (5)
         else if (prefix_size < line_number_size)
@@ -129,7 +132,7 @@ struct error_t
                 SetConsoleTextAttribute(win_console, ERROR__COLOR__ERROR);
             #endif
         }
-        std::cout << self.line_number;
+        std::cerr << fmt_line_number;
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
@@ -139,7 +142,7 @@ struct error_t
             cursor_position_pleca = console_info.dwCursorPosition;
             cursor_position_pleca.X++; cursor_position_pleca.Y++;
         #endif
-        std::cout << " | ";
+        std::cerr << " | ";
 
         // Print error line
         #if defined(OS_WIN)
@@ -183,7 +186,7 @@ struct error_t
                     cursor_position_token.Y++;
                 #endif
 
-                std::cout << error_scanner.token.value;
+                std::cerr << error_scanner.token.value;
                 #if defined(OS_WIN)
                     SetConsoleTextAttribute(win_console, ERROR__COLOR__STD);
                 #endif
@@ -191,12 +194,12 @@ struct error_t
             // Other tokens in error line
             else
             {
-                std::cout << error_scanner.token.value;
+                std::cerr << error_scanner.token.value;
             }
 
             if (skip_first_whitespaces) { skip_first_whitespaces = false; }
         }
-        std::cout << "\n";
+        std::cerr << "\n";
 
         // Line 3: ' ..↑ 1: error message' //
 
@@ -204,11 +207,11 @@ struct error_t
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
             SetConsoleCursorPosition(win_console, cursor_position_pleca);
         #endif
-        std::cout << "|";
+        std::cerr << "|";
         #if defined(OS_WIN)
             SetConsoleCursorPosition(win_console, cursor_position_token);
         #endif
-        std::cout << "^ ";
+        std::cerr << "^ ";
 
         // Is: warning
         if (type_problem == PROBLEM__WARNING)
@@ -224,17 +227,39 @@ struct error_t
                 SetConsoleTextAttribute(win_console, ERROR__COLOR__ERROR);
             #endif
         }
-        std::cout << self.char_number;
+        // Format: character number, with space ' ' as thousands separator - ('100 000 000')
+        std::cerr << self.thousands_separator(std::to_string(self.char_number));
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
         #endif
-        std::cout << " | ";
+        std::cerr << " | ";
 
         // Reset to standard color (console)
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD);
         #endif
-        std::cout << message << "\n";
+        std::cerr << message << "\n";
+    }
+
+    std::string thousands_separator(std::string source = "")
+    {
+        std::string       fmt_source                = "";
+        std::uint_fast8_t thousands_separator_count = 0;
+
+        // Format: line number, with space ' ' as thousands separator - ('100 000 000')
+        for (std::uint_fast64_t i = source.size(); i > 0; --i)
+        {
+            ++thousands_separator_count;
+
+            // Add thousands separator: ' ', to line number
+            if (thousands_separator_count > 3) {
+                fmt_source.insert(0, " "); thousands_separator_count = 0;
+            }
+
+            fmt_source.insert(0, 1, source[i-1]);
+        }
+
+        return fmt_source;
     }
 };

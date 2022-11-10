@@ -41,9 +41,6 @@ struct scanner_t
         while (self.file.contains())
         {
             c = self.file.see();
-            self.token.line_number = self.file.line_number;
-            self.token.char_number = self.file.char_number;
-
             switch (c)
             {
                 // Token: whitespaces
@@ -51,6 +48,9 @@ struct scanner_t
                 {
                     self.token.id    = TABLE__SPACE; self.file.get();
                     self.token.value = ' ';
+
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
 
                     while (self.file.contains())
                     {
@@ -72,6 +72,9 @@ struct scanner_t
                     self.token.id    = TABLE__AUTO_SEMICOLON; self.file.get();
                     self.token.value = ";";
 
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
+
                     while (self.file.contains())
                     {
                         c = self.file.see();
@@ -91,6 +94,9 @@ struct scanner_t
                 {
                     self.token.id    = TABLE__NAME;
                     self.token.value = self.file.get();
+
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
 
                     while (self.file.contains())
                     {
@@ -114,6 +120,9 @@ struct scanner_t
                     self.token.id    = TABLE__NUM;
                     self.token.value = self.file.get();
 
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
+
                     while (self.file.contains())
                     {
                         c = self.file.see();
@@ -133,6 +142,9 @@ struct scanner_t
                 {
                     self.token.id    = TABLE__ILLEGAL_UNFINISHED__STR;
                     self.token.value = self.file.get();
+
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
 
                     while (self.file.contains())
                     {
@@ -159,6 +171,9 @@ struct scanner_t
                     self.token.id    = TABLE__ILLEGAL_UNFINISHED__STRCHAR;
                     self.token.value = self.file.get();
 
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
+
                     // Character as content of string: '..'
                     if (self.file.contains()) { self.token.value += self.file.get(); }
 
@@ -176,6 +191,9 @@ struct scanner_t
                 {
                     self.token.id    = TABLE__DIVISION;
                     self.token.value = self.file.get();
+
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
 
                     // Is: division '/'
                     if (!self.file.contains()) { return true; }
@@ -237,12 +255,23 @@ struct scanner_t
 
 
                 // Token: symbols //
-                break; case ';': { self.token.id = TABLE__SEMICOLON; self.token.value = self.file.get(); }
-                break; case '.': { self.token.id = TABLE__DOT;       self.token.value = self.file.get(); }
+                break; case ';': self.token.id = TABLE__SEMICOLON; goto GOTO__GETCHAR;
+                       case '.': self.token.id = TABLE__DOT;       goto GOTO__GETCHAR;
+                {
+                    GOTO__GETCHAR:
+
+                    self.token.value = self.file.get();
+
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
+                }
                 break; case ':':
                 {
                     self.token.id    = TABLE__COLON;
                     self.token.value = self.file.get();
+
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
 
                     // Is: namespace separator '::' → 'namespace::namespace::name'
                     if (self.file.contains() && self.file.see() == ':')
@@ -256,6 +285,9 @@ struct scanner_t
                 {
                     self.token.id    = TABLE__ILLEGAL;
                     self.token.value = self.file.get();
+
+                    self.token.line_number = self.file.line_number;
+                    self.token.char_number = self.file.char_number;
                 }
             }
 

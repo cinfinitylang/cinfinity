@@ -22,6 +22,7 @@ struct parser_t
         while (self.scanner.scan())
         {
             error.error("illegal");
+            //std::exit(EXIT_FAILURE);
             std::cout << "[" << self.scanner.token.value << "] ";
         }
     }

@@ -27,6 +27,7 @@ struct scanner_t
         {
             // Skip tokens as comments, ..
             if (self.token.id == TABLE__CMT__ONE_LINE || self.token.id == TABLE__CMT__MULTI_LINE) { continue; }
+            
             return true;
         }
 

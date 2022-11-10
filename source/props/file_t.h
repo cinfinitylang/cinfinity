@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <clocale>
 
 struct file_t
 {

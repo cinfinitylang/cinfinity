@@ -46,7 +46,7 @@ struct error_t
     }
 
     // Throw problem (error | warning) - (message/diagnosis with format)
-    private: void problem(bool type_problem = PROBLEM__ERROR, std::string message = "")
+    private: void problem(bool problem_type = PROBLEM__ERROR, std::string message = "")
     {
         CONSOLE_SCREEN_BUFFER_INFO console_info;
         COORD                      cursor_position_token, cursor_position_pleca;
@@ -65,7 +65,7 @@ struct error_t
         // Line 1: 'error | path/file' //
 
         // Is: error
-        if (type_problem == PROBLEM__WARNING)
+        if (problem_type == PROBLEM__WARNING)
         {
             #if defined(OS_WIN)
                 SetConsoleTextAttribute(win_console, ERROR__COLOR__WARNING);
@@ -120,7 +120,7 @@ struct error_t
         }
 
         // Is: warning
-        if (type_problem == PROBLEM__WARNING)
+        if (problem_type == PROBLEM__WARNING)
         {
             #if defined(OS_WIN)
                 SetConsoleTextAttribute(win_console, ERROR__COLOR__WARNING);
@@ -166,7 +166,7 @@ struct error_t
             if (self.char_number == error_scanner.token.char_number)
             {
                 // Is: warning
-                if (type_problem == PROBLEM__WARNING)
+                if (problem_type == PROBLEM__WARNING)
                 {
                     #if defined(OS_WIN)
                         SetConsoleTextAttribute(win_console, ERROR__COLOR__WARNING);
@@ -215,7 +215,7 @@ struct error_t
         std::cerr << "^ ";
 
         // Is: warning
-        if (type_problem == PROBLEM__WARNING)
+        if (problem_type == PROBLEM__WARNING)
         {
             #if defined(OS_WIN)
                 SetConsoleTextAttribute(win_console, ERROR__COLOR__WARNING);

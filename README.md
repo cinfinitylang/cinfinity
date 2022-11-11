@@ -1,4 +1,4 @@
-# The C∞ Programming Language
+# The C∞ programming language
 
 <img src="./C∞.png" alt="C∞" height=168 width=168 />
 

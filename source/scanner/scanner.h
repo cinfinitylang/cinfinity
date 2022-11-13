@@ -175,7 +175,16 @@ struct scanner_t
                     self.token.char_number = self.file.char_number;
 
                     // Character as content of string: '..'
-                    if (self.file.contains()) { self.token.value += self.file.get(); }
+                    if (self.file.contains())
+                    {
+                        self.token.value += ({ c = self.file.get(); c; });
+
+                        // End of empty string (single: '') - (not is: ''')
+                        if (c == '\'' && (!self.file.contains() || self.file.see_unicode() != "'"))
+                        {
+                            self.token.id = TABLE__STRCHAR; return true;
+                        }
+                    }
 
                     // End of string ' → '..'
                     //               ↑ ---→ ↑

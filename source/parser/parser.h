@@ -21,11 +21,13 @@ struct parser_t
     {
         while (self.scanner.scan())
         {
+            /*
             // Skip
             if (self.scanner.token.id == TABLE__SPACE || self.scanner.token.id == TABLE__AUTO_SEMICOLON)
             {
                 continue;
             }
+            */
 
             //error.line_number = self.scanner.token.line_number;
             //error.char_number = self.scanner.token.char_number;

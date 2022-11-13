@@ -27,9 +27,9 @@ struct parser_t
                 continue;
             }
 
-            error.line_number = self.scanner.token.line_number;
-            error.char_number = self.scanner.token.char_number;
-            error.error("illegal");
+            //error.line_number = self.scanner.token.line_number;
+            //error.char_number = self.scanner.token.char_number;
+            //error.error("illegal");
             //std::exit(EXIT_FAILURE);
             std::cout << "[" << self.scanner.token.value << "] ";
         }

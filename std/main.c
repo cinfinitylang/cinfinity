@@ -1,10 +1,11 @@
 use std::c::stdio as cstdio
 use std::cpp
-use scan::token as tok
+use scan::token   as tok
 
 /* Script of C∞ */
 
-type regex {         // ↓ optional (assignment), default initialized types
+class regex
+{                    // ↓ optional (assignment), default initialized types
     ft match(src: str = "", expr: str): bool
     {
         return std::regex::match(src, expr); // ';' optional, at the end of line or file
@@ -14,55 +15,44 @@ type regex {         // ↓ optional (assignment), default initialized types
 // 'main' function (start program)
 ft main(): void
 {
-    // Print in console in compile-time, with the keyword 'pre' at the begin of function: 'pre_print()'
-    pre_println()
-
     salute: str = "Hello"
 
-    printf("%s", salute)     // 'std::c::stdio'
+    printf("%s", salute)     // Print: C   'std::c::stdio'
+    iostream::cout(" world") // Print: C++ 'std::cpp::iostream'
+    print("!".n)             // Print: C∞  'print'
 
-    iostream::cout(" world") // 'std::cpp::iostream'
-
-    print("!".n)
-
-    spin salute as c: char { // Print: "Hello"
+    spin salute as c: char // Print: "Hello"
+    {
         print(c)
     }
 
-    ↻ salute as c: char {    // Print: "Hello"
+    ↻ salute as c: char   // Print: "Hello"
+    {
         print(c)
     }
 
-    ↺ salute as c: char {    // Print: "olleH"
+    ↺ salute as c: char   // Print: "olleH"
+    {
         print(c)
     }
 
-    spin 100. { // Print 100 times: "Hi\n"
+    spin 100 // Print 100 times: "Hi\n"
+    {
         print("Hi".n)
     }
 
     c: char = 'C'
-    match c {
-        'A' {
-            print("Letter is A".n)
-        }
-
-        'B' {
-            print("Letter is B".n)
-        }
-
-        'C' {
-            print("Letter is C".n)
+    match c
+    {
+        'A' .. 'Z'
+        {
+            print("Letter of alphabet".n)
         }
 
         // Others (default)
+        ..
         {
-            print("Unexpected letter".n)
+            print("Unexpected".n)
         }
     }
-}
-
-pre: ft pre_println(): void
-{
-    print("Hello compile-time" + '!'.str.n);
 }

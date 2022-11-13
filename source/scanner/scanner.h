@@ -255,8 +255,16 @@ struct scanner_t
 
 
                 // Token: symbols //
-                break; case ';': self.token.id = TABLE__SEMICOLON; goto GOTO__GETCHAR;
-                       case '.': self.token.id = TABLE__DOT;       goto GOTO__GETCHAR;
+                break; case ';': self.token.id = TABLE__SEMICOLON;     goto GOTO__GETCHAR;
+                       case '.': self.token.id = TABLE__DOT;           goto GOTO__GETCHAR;
+                       case ',': self.token.id = TABLE__COMMA;         goto GOTO__GETCHAR;
+                       case '(': self.token.id = TABLE__OPEN_PAREN;    goto GOTO__GETCHAR;
+                       case ')': self.token.id = TABLE__CLOSE_PAREN;   goto GOTO__GETCHAR;
+                       case '{': self.token.id = TABLE__OPEN_KEY;      goto GOTO__GETCHAR;
+                       case '}': self.token.id = TABLE__CLOSE_KEY;     goto GOTO__GETCHAR;
+                       case '[': self.token.id = TABLE__OPEN_BRACKET;  goto GOTO__GETCHAR;
+                       case ']': self.token.id = TABLE__CLOSE_BRACKET; goto GOTO__GETCHAR;
+                       case '=': self.token.id = TABLE__EQUAL;         goto GOTO__GETCHAR;
                 {
                     GOTO__GETCHAR:
 
@@ -283,8 +291,14 @@ struct scanner_t
                 // Token: illegal
                 break; default:
                 {
-                    self.token.id    = TABLE__ILLEGAL;
-                    self.token.value = self.file.get();
+                    self.token.value = self.file.get_unicode();
+
+                    // Is: cycle (normal: spin-alias) - (begin → end)
+                    if      (self.token.value == "↻") { self.token.id = TABLE__CYCLE;         }
+                    // Is: reverse cycle              - (begin ← end)
+                    else if (self.token.value == "↺") { self.token.id = TABLE__CYCLE_REVERSE; }
+                    // Is: illegal
+                    else                               { self.token.id = TABLE__ILLEGAL;       }
 
                     self.token.line_number = self.file.line_number;
                     self.token.char_number = self.file.char_number;

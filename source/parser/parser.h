@@ -21,6 +21,10 @@ struct parser_t
     {
         while (self.scanner.scan())
         {
+            // Sentence: ft name(): type { .. }
+            if (self.scanner.token.id == TABLE__KEYWORD__FT)
+            {}
+
             /*
             // Skip
             if (self.scanner.token.id == TABLE__SPACE || self.scanner.token.id == TABLE__AUTO_SEMICOLON)

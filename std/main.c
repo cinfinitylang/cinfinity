@@ -2,7 +2,17 @@ use std::c::stdio as cstdio
 use std::cpp
 use scan::token   as tok
 
-/* Script of C∞ */
+/*
+    Functions and variables (globals): public by default   - (private-only to the needs)
+    Numbers (values):                  positive by default - (with signed-only to the needs: (with: 100.sign))
+                                                              100.bytes(1..4)  {1: 8-bit,  2: 16-bit, ..}
+                                                              100.0.bytes(4|8) {1: 32-bit, 2: 64-bit}
+    Variables (alls):                  mutable by default  - (automatic const in variables-mutables +
+                                                               immutable-only to the needs (
+                                                                not changed by another programmer
+                                                               )
+                                                              )
+*/
 
 class regex
 {                    // ↓ optional (assignment), default initialized types

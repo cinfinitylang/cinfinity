@@ -4,7 +4,16 @@
 enum
 {
     // Keywords //
-    TABLE__NAME,    // var_name
+    TABLE__NAME, // var_name
+
+    TABLE__KEYWORD__FT,    // ft
+    TABLE__KEYWORD__USE,   // use
+    TABLE__KEYWORD__AS,    // as
+    TABLE__KEYWORD__CLASS, // class
+    TABLE__KEYWORD__VOID,  // void
+    TABLE__KEYWORD__CHAR,  // char
+    TABLE__KEYWORD__STR,   // str
+    TABLE__KEYWORD__NUM,   // num
 
     // Values //
     TABLE__STR,     // ".."

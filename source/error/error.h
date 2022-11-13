@@ -202,16 +202,15 @@ struct error_t
         }
         std::cerr << "\n";
 
-        // Line 3: ' ..↑ 1: error message' //
+        // Line 3: ' ..| ..↑ 1: error message' //
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
-            SetConsoleCursorPosition(win_console, cursor_position_pleca);
         #endif
-        std::cerr << "|";
-        #if defined(OS_WIN)
-            SetConsoleCursorPosition(win_console, cursor_position_token);
-        #endif
+        for (i = 0; i < (std::uint_fast64_t)cursor_position_pleca.X ; ++i) { std::cerr << ' '; }
+        std::cerr << "| "; // ←----------------------------------------------------------↴
+        //                                                        ↓ This: +2, + size of: "| " (previous)
+        for (i = (std::uint_fast64_t)cursor_position_token.X - (i+2); i > 0 ; --i) { std::cerr << ' '; }
         std::cerr << "^ ";
 
         // Is: warning
@@ -240,7 +239,7 @@ struct error_t
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD);
         #endif
-        std::cerr << message << "\n";
+        std::cerr << message << '\n';
     }
 
     std::string thousands_separator(std::string source = "")

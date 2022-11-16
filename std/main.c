@@ -36,12 +36,12 @@ ft main(): void
         print(c)
     }
 
-    ↻ salute as c: char   // Print: "Hello"
+    c: char ↻ salute   // Print: "Hello"
     {
         print(c)
     }
 
-    ↺ salute as c: char   // Print: "olleH"
+    c: char ↺ salute   // Print: "olleH"
     {
         print(c)
     }

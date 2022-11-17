@@ -1,5 +1,5 @@
 // Test main function
-ft main()
+ft /*main()
 {
     print("Hello world!".n)
 }
@@ -18,7 +18,7 @@ use scan::token   as tok
                                                                 not changed by another programmer
                                                                )
                                                               )
-*/
+* /
 
 class regex
 {                    // ↓ optional (assignment), default initialized types
@@ -72,3 +72,4 @@ ft main(): void
         }
     }
 }
+*/

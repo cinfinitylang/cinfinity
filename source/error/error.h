@@ -7,6 +7,7 @@
 
     #define ERROR__COLOR__STD      7
     #define ERROR__COLOR__STD_HIGH 15
+    #define ERROR__COLOR__EXPECT   10
     #define ERROR__COLOR__ERROR    12
     #define ERROR__COLOR__WARNING  14
 #endif
@@ -18,6 +19,9 @@
 #define PROBLEM__ERROR   true
 #define PROBLEM__WARNING false
 
+#define NEXT_TOKEN__EXIST   true
+#define NEXT_TOKEN__UNEXIST false
+
 #define PREFIX__ERROR   "error"
 #define PREFIX__WARNING "warning"
 
@@ -25,13 +29,12 @@ struct error_t
 {
     std::string path = "";
     token_t     token;
+    token_t     token_helper;
+    bool        next_token_exist = NEXT_TOKEN__EXIST;
 
     #if defined(OS_WIN)
         HANDLE win_console = GetStdHandle(STD_ERROR_HANDLE);
     #endif
-
-    std::uint_fast64_t line_number = 1;
-    std::uint_fast64_t char_number = 0;
 
     // Throw error (message / diagnosis) + stop all
     void error(std::string message = "")
@@ -48,11 +51,15 @@ struct error_t
     // Throw problem (error | warning) - (message/diagnosis with format)
     private: void problem(bool problem_type = PROBLEM__ERROR, std::string message = "")
     {
+        // If next token not exist //
+        if (self.next_token_exist == NEXT_TOKEN__UNEXIST) { self.token = self.token_helper; }
+
         CONSOLE_SCREEN_BUFFER_INFO console_info;
-        COORD                      cursor_position_token, cursor_position_pleca;
+        COORD                      cursor_position_token = {X: 0, Y: 0},
+                                   cursor_position_pleca = {X: 0, Y: 0};
 
         // Format: line number, with space ' ' as thousands separator - ('100 000 000')
-        std::string fmt_line_number = self.thousands_separator(std::to_string(self.line_number));
+        std::string fmt_line_number = self.thousands_separator(std::to_string(self.token.line_number));
 
         std::uint_fast64_t prefix_size      = 0,
                            indent           = 0, i = 0,
@@ -107,7 +114,8 @@ struct error_t
 
         // Line 2: ' 10 | error line' //
 
-        // Size: line number '100000' (6), is greather that 'error' (5)
+        // Size: line number '100 000' (7) - (with format (space ' ': thousands separator)),
+        //  is greather that 'error' (5)
         if (prefix_size > line_number_size)
         {
             indent = prefix_size - line_number_size;
@@ -154,7 +162,7 @@ struct error_t
         while (error_scanner.scan())
         {
             // Other line
-            if (self.line_number != error_scanner.token.line_number) { continue; }
+            if (self.token.line_number != error_scanner.token.line_number) { continue; }
 
             // Is: error line //
 
@@ -163,7 +171,7 @@ struct error_t
                  error_scanner.token.id == TABLE__AUTO_SEMICOLON) { continue; }
 
             // Is: error token //
-            if (self.char_number == error_scanner.token.char_number)
+            if (self.token.char_number == error_scanner.token.char_number)
             {
                 // Is: warning
                 if (problem_type == PROBLEM__WARNING)
@@ -198,6 +206,19 @@ struct error_t
                 std::cerr << error_scanner.token.value;
             }
 
+            // If next token not exist //
+            if (self.next_token_exist == NEXT_TOKEN__UNEXIST &&
+                error_scanner.token.char_number+1 == self.token.char_number)
+            {
+                #if defined(OS_WIN)
+                    SetConsoleTextAttribute(win_console, ERROR__COLOR__EXPECT);
+                #endif
+                std::cerr << self.token.value;
+                #if defined(OS_WIN)
+                    SetConsoleTextAttribute(win_console, ERROR__COLOR__STD);
+                #endif
+            }
+
             if (skip_first_whitespaces) { skip_first_whitespaces = false; }
         }
         std::cerr << "\n";
@@ -207,10 +228,12 @@ struct error_t
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);
         #endif
-        for (i = 0; i < (std::uint_fast64_t)cursor_position_pleca.X ; ++i) { std::cerr << ' '; }
-        std::cerr << "| "; // ←----------------------------------------------------------↴
-        //                                                        ↓ This: +2, + size of: "| " (previous)
-        for (i = (std::uint_fast64_t)cursor_position_token.X - (i+2); i > 0 ; --i) { std::cerr << ' '; }
+        for (i = 0; i < (std::uint_fast64_t)cursor_position_pleca.X; ++i) { std::cerr << ' '; }
+        std::cerr << "| "; // ←------------------------------------------------------------↴
+        //                                                          ↓ This: +2, + size of: "| " (previous)
+        for (i = (((std::uint_fast64_t)cursor_position_token.X >= (i+2))?
+            (std::uint_fast64_t)cursor_position_token.X - (i+2): self.token.char_number-1);
+            i > 0 ; --i) { std::cerr << ' '; }
         std::cerr << "^ ";
 
         // Is: warning
@@ -228,7 +251,7 @@ struct error_t
             #endif
         }
         // Format: character number, with space ' ' as thousands separator - ('100 000 000')
-        std::cerr << self.thousands_separator(std::to_string(self.char_number));
+        std::cerr << self.thousands_separator(std::to_string(self.token.char_number));
 
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD_HIGH);

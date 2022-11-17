@@ -252,7 +252,7 @@ struct scanner_t
                     // ↑ -→ ↑
                     else if (c == '*')
                     {
-                        self.file.get();
+                        self.token.value += self.file.get();
                         self.token.id = TABLE__ILLEGAL_UNFINISHED__CMT__MULTI_LINE;
 
                         while (self.file.contains())

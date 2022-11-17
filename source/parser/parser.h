@@ -19,16 +19,18 @@ struct parser_t
     // Get code generated of file + analyze syntax
     void parse(void)
     {
-        while (self.scanner.scan())
+        while (self._scan_file())
         {
-            // Skip spaces and automatic-semicolons (';')
-            if (self.scanner.token.id == TABLE__SPACE || self.scanner.token.id == TABLE__AUTO_SEMICOLON)
-             { continue; }
-
             // Sentence: ft name(): type { .. }
             if (self.scanner.token.id == TABLE__KEYWORD__FT)
             {
-                //if (self.scanner.token) {}
+                self._get_token_helper(); // Save first token (as helper for error-diagnosis)
+
+                if (!self._scan_file())
+                {
+                    self._error_expected_token("name");
+                    self._error("expected name for 'ft'");
+                }
             }
             // Sentence: illegal
             else
@@ -53,21 +55,38 @@ struct parser_t
 
     // Private //
 
-    // Throw error (diagnosis/message) and stop all
-    private: void _error(std::string message = "")
+    // Get next token in file
+    private: bool _scan_file(void)
     {
-        self.error.line_number = self.scanner.token.line_number;
-        self.error.char_number = self.scanner.token.char_number;
+        while (self.scanner.scan())
+        {
+            // Skip spaces and automatic-semicolons (';')
+            if (self.scanner.token.id == TABLE__SPACE || self.scanner.token.id == TABLE__AUTO_SEMICOLON)
+             { continue; }
 
-        self.error.error(message);
+            // Token: code
+            self.error.token = self.scanner.token;
+            return true;
+        }
+
+        return false;
     }
+
+    // Configurate new expected-token for error-diagnosis
+    void _error_expected_token(std::string expected_token = "")
+    {
+        self.error.next_token_exist = NEXT_TOKEN__UNEXIST;
+        self.error.token_helper.char_number += (self.error.token_helper.value.size()+1); // '+1' = +1 space: ' ',
+                                                                // (example (error-diagnosis): ft' 'expected-token)
+        self.error.token_helper.value = expected_token;
+    }
+
+    // Save backup token
+    void _get_token_helper(void) { self.error.token_helper = self.scanner.token; }
+    
+    // Throw error (diagnosis/message) and stop all
+    void _error(std::string message = "") { self.error.error(message); }
 
     // Throw warning (diagnosis/message) and continue
-    void _warning(std::string message = "")
-    {
-        self.error.line_number = self.scanner.token.line_number;
-        self.error.char_number = self.scanner.token.char_number;
-
-        self.error.warning(message);
-    }
+    void _warning(std::string message = "") { self.error.warning(message); }
 };

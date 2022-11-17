@@ -1,3 +1,9 @@
+// Test main function
+ft main()
+{
+    print("Hello world!".n)
+}
+
 use std::c::stdio as cstdio
 use std::cpp
 use scan::token   as tok

@@ -21,9 +21,14 @@ struct parser_t
     {
         while (self.scanner.scan())
         {
+            // Skip spaces and automatic-semicolons (';')
+            if (self.scanner.token.id == TABLE__SPACE || self.scanner.token.id == TABLE__AUTO_SEMICOLON)
+             { continue; }
+
             // Sentence: ft name(): type { .. }
             if (self.scanner.token.id == TABLE__KEYWORD__FT)
             {
+                //if (self.scanner.token) {}
             }
             // Sentence: illegal
             else

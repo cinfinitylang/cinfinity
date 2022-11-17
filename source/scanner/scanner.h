@@ -33,14 +33,17 @@ struct scanner_t
             // Retoken: keywords - (name → keyword)
             else if (self.token.id == TABLE__NAME)
             {
-                if      (self.token.value == "ft")    { self.token.id = TABLE__KEYWORD__FT;    }
-                else if (self.token.value == "use")   { self.token.id = TABLE__KEYWORD__USE;   }
-                else if (self.token.value == "as")    { self.token.id = TABLE__KEYWORD__AS;    }
-                else if (self.token.value == "class") { self.token.id = TABLE__KEYWORD__CLASS; }
-                else if (self.token.value == "void")  { self.token.id = TABLE__KEYWORD__VOID;  }
-                else if (self.token.value == "char")  { self.token.id = TABLE__KEYWORD__CHAR;  }
-                else if (self.token.value == "str")   { self.token.id = TABLE__KEYWORD__STR;   }
-                else if (self.token.value == "num")   { self.token.id = TABLE__KEYWORD__NUM;   }
+                if      (self.token.value == "ft")     { self.token.id = TABLE__KEYWORD__FT;     }
+                else if (self.token.value == "use")    { self.token.id = TABLE__KEYWORD__USE;    }
+                else if (self.token.value == "as")     { self.token.id = TABLE__KEYWORD__AS;     }
+                else if (self.token.value == "class")  { self.token.id = TABLE__KEYWORD__CLASS;  }
+                else if (self.token.value == "match")  { self.token.id = TABLE__KEYWORD__MATCH;  }
+                else if (self.token.value == "void")   { self.token.id = TABLE__KEYWORD__VOID;   }
+                else if (self.token.value == "bool")   { self.token.id = TABLE__KEYWORD__BOOL;   }
+                else if (self.token.value == "char")   { self.token.id = TABLE__KEYWORD__CHAR;   }
+                else if (self.token.value == "str")    { self.token.id = TABLE__KEYWORD__STR;    }
+                else if (self.token.value == "num")    { self.token.id = TABLE__KEYWORD__NUM;    }
+                else if (self.token.value == "return") { self.token.id = TABLE__KEYWORD__RETURN; }
             }
 
             return true;

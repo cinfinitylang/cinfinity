@@ -11,4 +11,4 @@ ft main(): void
 
 ---
 
-[_**Welcome**_](https://github.com/cinfinity-lang/welcome)
+[_**Welcome**_](https://github.com/cinfinitylang/welcome)

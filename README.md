@@ -8,3 +8,7 @@ ft main(): void
     print("Hello world!".n)
 }
 ```
+
+---
+
+[_**Welcome**_](https://github.com/cinfinity-lang/welcome)

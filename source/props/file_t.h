@@ -1,7 +1,6 @@
 #pragma once
 
 #include <fstream>
-#include <clocale>
 
 // Advance file-position?
 #define FILE_ADVANCE   true
@@ -17,10 +16,10 @@ struct file_t
     std::uint_fast64_t char_number = 0;
 
     file_t(void) = default;
-    file_t(std::string path, std::ios::openmode mode)    { self.open(path, mode); }
+    file_t(std::string path, std::ios::openmode mode) { self.open(path, mode); }
     void open(std::string path = "", std::ios::openmode mode
-        = std::fstream::in | std::fstream::out) { self.descriptor.open(path, mode); }
-    ~file_t(void) { if (self.descriptor.is_open()) { self.descriptor.close(); } }
+        = std::fstream::in | std::fstream::out)    { self.descriptor.open(path, mode); }
+    ~file_t(void) { if (self.descriptor.is_open()) { self.descriptor.close(); }        }
 
     // Check if exist content in file
     bool contains(void)
@@ -70,7 +69,7 @@ struct file_t
             break; default:                        { size = 1; }
             break; case (char)0xC2 ... (char)0xDF: { size = 2; }
             break; case (char)0xE0 ... (char)0xEF: { size = 3; }
-            break; case (char)0xF0 ... (char)0xF2: { size = 4; }
+            break; case (char)0xF0 ... (char)0xFF: { size = 4; }
         }
 
         // Get character (unicode) //

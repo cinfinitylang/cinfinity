@@ -2,6 +2,11 @@
 
 #include "../scanner/scanner.h"
 #include "../error/error.h"
+#include "./ast_t.h"
+#include "../cgen/type_t.h"
+
+#define SCOPE__GLOBAL true
+#define SCOPE__NESTED false
 
 // Syntactic analyzer (1-file)
 struct parser_t
@@ -11,52 +16,56 @@ struct parser_t
     public:
 
     parser_t(void) = default;
-    parser_t(std::string path, std::ios::openmode mode)
-    {
-        self.scanner.open(path, mode); self.error.path = path;
-    }
+    parser_t(std::string path) { self.scanner.open(path); self.error.path = path; }
 
     // Get code generated of file + analyze syntax
-    void parse(void)
+    void parse(std::fstream &file) { recursive_parse(file, SCOPE__GLOBAL); }
+
+    // Recursive analysis of sentences (1-file)
+    void recursive_parse(std::fstream &file, bool scope = SCOPE__NESTED)
     {
         while (self._scan_file())
         {
-            // Sentence: ft name(): type { .. }
+            // Sentence: 'ft name(..): (..) { .. }'
             if (self.scanner.token.id == TABLE__KEYWORD__FT)
             {
                 self._get_token_helper(); // Save first token (as helper for error-diagnosis)
 
+                // Is: name ('ft name(..): type { .. }') //
+                //               ↑--↑ name
+
+                // No exit: name ('ft')
                 if (!self._scan_file())
                 {
                     self._error_expected_token("name");
                     self._error("expected name for 'ft'");
                 }
+                // Exist: name ('ft')
+                if (self.scanner.token.id != TABLE__NAME) { self._error("illegal name for 'ft'"); }
+
+                file << "Hello";
+
+                //self._write_token(file);
             }
             // Sentence: illegal
-            else
-            {
-                self._error("illegal sentence");
-            }
-
-            /*
-            // Skip
-            if (self.scanner.token.id == TABLE__SPACE || self.scanner.token.id == TABLE__AUTO_SEMICOLON)
-            {
-                continue;
-            }
-            */
-
-            //error.line_number = self.scanner.token.line_number;
-            //error.char_number = self.scanner.token.char_number;
-            //std::exit(EXIT_FAILURE);
-            //std::cout << "[" << self.scanner.token.value << "] ";
+            else { self._error("illegal sentence"); }
         }
     }
 
     // Private //
 
+    // Write token generated as C++-code
+    private: void _write_token(std::fstream &file)
+    {
+        file << "{i:" << std::to_string(self.scanner.token.id)
+            << ";v:\"" << self.scanner.token.value
+            << "\";l:" << std::to_string(self.scanner.token.line_number)
+            << ";c:" << std::to_string(self.scanner.token.line_number)
+            << "}\n";
+    }
+
     // Get next token in file
-    private: bool _scan_file(void)
+    bool _scan_file(void)
     {
         while (self.scanner.scan())
         {

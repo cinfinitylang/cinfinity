@@ -157,7 +157,7 @@ struct error_t
         #if defined(OS_WIN)
             SetConsoleTextAttribute(win_console, ERROR__COLOR__STD);
         #endif
-        scanner_t error_scanner; error_scanner.open(self.path, std::fstream::in);
+        scanner_t error_scanner; error_scanner.open(self.path);
         bool      skip_first_whitespaces = true;
         while (error_scanner.scan())
         {

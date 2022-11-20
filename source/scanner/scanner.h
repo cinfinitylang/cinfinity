@@ -16,9 +16,8 @@ struct scanner_t
     token_t token;
 
     scanner_t(void) = default;
-    scanner_t(std::string path, std::ios::openmode mode) { self.open(path, mode); }
-    void open(std::string path = "", std::ios::openmode mode
-        = std::fstream::in | std::fstream::out) { self.file.open(path, mode); }
+    scanner_t(std::string path)      { self.open(path);                        }
+    void open(std::string path = "") { self.file.open(path, std::fstream::in); }
 
     // Lexicographic analyzer - (1-file)
     bool scan(void)

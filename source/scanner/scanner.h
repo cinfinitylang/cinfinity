@@ -2,14 +2,14 @@
 
 #include <iostream>
 
-#include "../props/file_t.h"
+#include "../stdlib/file.h"
 #include "../props/token_t.h"
 
 #include "./table.h"
 
 struct scanner_t
 {
-    private: file_t file;
+    private: cinfinity::file file;
     
     public:
     

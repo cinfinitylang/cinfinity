@@ -1,5 +1,6 @@
 # C∞ resources
 /BUILD
+/gcm.cache
 
 # Prerequisites
 *.d

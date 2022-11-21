@@ -1,15 +1,22 @@
 #include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <vector>
+#include <algorithm>
 #include <cstdlib>
 
 using namespace std;
 
-#define COMPILER "g++"
-#define FLAGS    "-Wall -std=c++2b"
-#define TO_BIN   "-o"
-#define TO_OBJ   "-c"
-#define RENAME   "-o"
+// Commands, ..
+#define COMPILER         "g++"
+#define FLAGS            "-Wall -std=c++2b -fmodules-ts"
+#define CPP_HEADER_FLAGS "-x c++-system-header"
+#define TO_BIN           "-o"
+#define TO_OBJ           "-c"
+#define RENAME           "-o"
 
-#define BUILD     "BUILD"
+#define BUILD     "_"
+#define OBJS      "O"
 #define SRC       "source"
 #define MAIN      "main.c++"
 #define CINFINITY "Ci"
@@ -23,13 +30,31 @@ using namespace std;
     #define PATH_SEP "/"
 #endif
 
-// Prototypes
-void error(string);
-void cmd_new(void);
-void cmd_run(void);
-void cmd_void(void);
+// Object files
+#define STDLIB "stdlib"
 
-// Compilation: g++ -o new newfile.c++
+vector<string> path_files
+ =
+{
+    STDLIB PATH_SEP "file",
+};
+
+// Standard headers (library)
+vector<string> path_stdhs
+ =
+{
+    //"fstream",
+};
+
+// Prototypes
+void   error     (string);
+void   cmd_new   (void);
+void   cmd_run   (void);
+void   cmd_void  (void);
+void   cmd_header(string);
+string cmd_objs  (string, uint_fast64_t&);
+
+// Compilation: 'g++ -o new newfile.c++'
 int main(int argc, char* argv[])
 {
     // Command: 'new' (compile-only)
@@ -81,23 +106,51 @@ void cmd_new(void)
 {
     int err = 0;
 
-    // Create folder: 'BUILD'
+    // Create folder: build '_'
 
     #if defined(WIN)
         string create_build_folder = "IF not exist ." PATH_SEP BUILD " ( mkdir ." PATH_SEP BUILD " )";
         err = system(create_build_folder.c_str());
 
-        // Error creating folder: 'BUILD'
+        // Error creating folder: build '_'
         if (err != 0) { error("the folder could not be created { ." PATH_SEP BUILD " }"); }
     #endif
 
     // Compile: C∞
 
-    string cmd = COMPILER " " FLAGS " " TO_BIN " ." PATH_SEP BUILD PATH_SEP CINFINITY " ." PATH_SEP SRC PATH_SEP MAIN;
+    // Compile only: headers
+    for (string path : path_stdhs) { cmd_header(path); }
+
+    // Compile only: objects
+    string objs = ""; uint_fast64_t objs_i = 0;
+    for (string path : path_files) { objs += " ." PATH_SEP BUILD PATH_SEP + cmd_objs(path, objs_i); }
+
+    // Compile all (main + objects)
+
+    string cmd = COMPILER " " FLAGS " " TO_BIN " ." PATH_SEP BUILD PATH_SEP CINFINITY " ." PATH_SEP SRC PATH_SEP MAIN + objs;
     err = system(cmd.c_str());
 
-    // Error compiling
-    if (err != 0) { error(string("failed to compile { ") + cmd + " }"); }
+    // Error compiling (binary)
+    if (err != 0) { error(string("the binary could not be compiled { ") + cmd + " }"); }
+}
+
+// Compile 1-file: '.c++', to object: '.o'
+string cmd_objs(string path, uint_fast64_t &objs_i)
+{
+    string cpp   = path + ".c++";
+    string cpp_o = to_string(objs_i++) + ".o";
+    int err = 0;
+
+    // Compile: object '.o'
+
+    string cmd_obj = string(COMPILER " " FLAGS " " TO_OBJ " ." PATH_SEP SRC PATH_SEP) + cpp
+        + " " RENAME " ." PATH_SEP BUILD PATH_SEP + cpp_o;
+    err = system(cmd_obj.c_str());
+
+    // Error compiling (object)
+    if (err != 0) { error(string("object could not be compiled { ") + cmd_obj + " }"); }
+
+    return cpp_o;
 }
 
 // Clean directory
@@ -115,4 +168,17 @@ void cmd_void(void)
         if (err != 0) { error("the folder could not be removed { ." PATH_SEP BUILD " }"); }
         else { cout << "new void { " CINFINITY " }\n"; }
     #endif
+}
+
+// Compile 1-header 'import <header>' (standard library)
+void cmd_header(string path_str = "")
+{
+    int err = 0;
+
+    // Compile only: headers
+    string cmd_header = COMPILER " " FLAGS " " TO_OBJ " " CPP_HEADER_FLAGS " " + path_str;
+    err = system(cmd_header.c_str());
+
+    // Error compiling (headers)
+    if (err != 0) { error(string("header could not be compiled { ") + cmd_header + " }"); }
 }

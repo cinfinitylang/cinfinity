@@ -1,5 +1,4 @@
 #include <iostream>
-#include <fstream>
 #include <vector>
 
 #define self (*this)
@@ -9,11 +8,20 @@
     #define OS_WIN
 #endif
 
-#include "./parser/parser.h"
+//#include "./parser/parser.h"
+#include "./stdlib/file.h"
 
-// Compilation: 'g++ -o Ci ./source/main.c++ -Wall -std=c++2b'
+// Compilation: 'new' | 'new run'
 int main(int argc, char* argv[])
 {
+    cinfinity::file fs("./std/main.ci", std::fstream::in);
+    while (fs.contains())
+    {
+        std::cout << "[" << fs.get_unicode() << "] ";
+    }
+
+    return EXIT_SUCCESS;
+
     // Analyze: C∞-code and generate C++-code (write in files) //
 
     std::fstream file; file.open("./std/main.c++", std::ios::out);
@@ -23,7 +31,7 @@ int main(int argc, char* argv[])
         std::exit(EXIT_FAILURE);
     }
 
-    parser_t parser({std::string((char*)argv[1])});
-    parser.parse(file);
+    //parser_t parser({std::string((char*)argv[1])});
+    //parser.parse(file);
     file.close();
 }

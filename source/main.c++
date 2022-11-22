@@ -17,10 +17,10 @@
 // Compilation: 'new' | 'new run'
 int main(int argc, char* argv[])
 {
+    std::ofstream cgen("./std/main.cgen");
     cinfinity::file file("./std/main.ci", std::fstream::in);
      file.linenum = 1;
      file.charnum = 0;
-    std::ofstream cgen("./std/main.cgen");
 
     cinfinity::token  token;
      INIT_TOKEN(token);

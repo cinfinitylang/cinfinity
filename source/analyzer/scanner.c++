@@ -75,7 +75,7 @@ namespace cinfinity
                 break; case '\n':
                 {
                     token.id  = table::AUTO_SEMICOLON; file.get();
-                    token.val = ";";
+                    token.val = ';';
 
                     token.linenum = file.linenum;
                     token.charnum = file.charnum;

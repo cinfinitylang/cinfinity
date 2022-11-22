@@ -8,7 +8,7 @@ using namespace std;
 
 // Commands, ..
 #define COMPILER         "g++"
-#define FLAGS            "-Wall -std=c++2b -fmodules-ts"
+#define FLAGS            "-Wall -std=c++2b -fmodules-ts -O3"
 #define CPP_HEADER_FLAGS "-x c++-system-header"
 #define TO_BIN           "-o"
 #define TO_OBJ           "-c"

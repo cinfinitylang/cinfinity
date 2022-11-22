@@ -221,7 +221,10 @@ namespace cinfinity
 
             // Add thousands-separator (' ')
             if (thousands_sep_i > 3) {
-                number__thousands_sep.insert(0, " "); thousands_sep_i = 0;
+                number__thousands_sep.insert(0, 1, ' '); thousands_sep_i = 0;
+                //                          ↗   ↑    ↖
+                //                        ↙     ↓      ↘
+                //                      Begin | Size  | Character (to append)
             }
 
             // Digit without-changes

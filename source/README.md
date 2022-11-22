@@ -4,6 +4,6 @@
 * **g++ -o new newfile.c++**
 
 ## Commands ('new')
-* **new:** compile-only
-* **new run:** compile + run
+* **new:**      compile-only
+* **new run:**  compile + run
 * **new void:** clean

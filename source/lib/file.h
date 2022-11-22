@@ -10,20 +10,18 @@ namespace cinfinity
 {
     struct file
     {
-        using openmode = std::ios::openmode;
+        using uint     = std::uint_fast64_t;
         using string   = std::string;
         using fs       = std::fstream;
-        using uint     = std::uint_fast64_t;
+        using openmode = std::ios::openmode;
 
-        uint line_number = 1;
-        uint char_number = 0;
-
-        file ();
+        uint linenum;
+        uint charnum;
+        
         file (string, openmode);
         ~file();
 
-        void open(string, openmode);
-
+        void   open(string, openmode);
         bool   contains();
         char   get();
         char   see();

@@ -1,37 +1,43 @@
-#include <iostream>
-#include <vector>
+#include <fstream>
 
 #define self (*this)
 
-// Is: windows (32/64 bits)
+// Windows (32/64 bits)
 #if defined(_WIN32) || defined(_WIN64)
     #define OS_WIN
 #endif
 
-//#include "./parser/parser.h"
-#include "./stdlib/file.h"
+#include "./lib/file.h"
+#include "./lib/token.h"
+#include "./analyzer/scanner.h"
+#include "./analyzer/parser.h"
+#include "./analyzer/error.h"
+#include "./analyzer/table.h"
 
 // Compilation: 'new' | 'new run'
 int main(int argc, char* argv[])
 {
-    cinfinity::file fs("./std/main.ci", std::fstream::in);
-    while (fs.contains())
-    {
-        std::cout << "[" << fs.get_unicode() << "] ";
-    }
+    cinfinity::file file("./std/main.ci", std::fstream::in);
+     file.linenum = 1;
+     file.charnum = 0;
+    std::ofstream cgen("./std/main.cgen");
 
-    return EXIT_SUCCESS;
+    cinfinity::token  token;
+     INIT_TOKEN(token);
+    cinfinity::scanner scanner;
+    cinfinity::parser  parser;
 
-    // Analyze: C∞-code and generate C++-code (write in files) //
+    cinfinity::error error;
+     INIT_ERROR(error);
+     INIT_TOKEN(error.token);
+     INIT_TOKEN(error.token_helper);
+     error.path = "./std/main.ci";
+     #if defined(OS_WIN)
+        error.win_console = CONSOLE;
+     #endif
 
-    std::fstream file; file.open("./std/main.c++", std::ios::out);
-    if (!file.is_open())
-    {
-        std::cerr << "error: file not opened" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    //parser_t parser({std::string((char*)argv[1])});
-    //parser.parse(file);
-    file.close();
+    // Analyze: C∞-code + get code
+    parser.parse(scanner, file, token, cgen, error);
+    
+    cgen.close(); // Close: file '.cgen'
 }

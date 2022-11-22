@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
@@ -31,19 +30,26 @@ using namespace std;
 #endif
 
 // Object files
-#define STDLIB "stdlib"
+#define LIB      "lib"
+#define ANALYZER "analyzer"
 
 vector<string> path_files
  =
 {
-    STDLIB PATH_SEP "file",
+    // 'lib' (folder)
+    LIB PATH_SEP "file",
+
+    // 'analyzer' (folder)
+    ANALYZER PATH_SEP "scanner",
+    ANALYZER PATH_SEP "parser",
+    ANALYZER PATH_SEP "error",
 };
 
 // Standard headers (library)
 vector<string> path_stdhs
  =
 {
-    //"fstream",
+    //"iostream",
 };
 
 // Prototypes
@@ -158,15 +164,28 @@ void cmd_void(void)
 {
     int err = 0;
 
-    // Remove folder: 'BUILD'
+    // Remove folder: build '_'
 
     #if defined(WIN)
         string remove_build_folder = "IF exist ." PATH_SEP BUILD " ( rmdir /s /q ." PATH_SEP BUILD " )";
         err = system(remove_build_folder.c_str());
 
-        // Error removing folder: 'BUILD'
+        // Error removing folder: '_'
         if (err != 0) { error("the folder could not be removed { ." PATH_SEP BUILD " }"); }
-        else { cout << "new void { " CINFINITY " }\n"; }
+        else { cout << "new void { " CINFINITY ":" BUILD " }\n"; }
+    #endif
+
+    // Remove folder: 'gcm.cache'
+
+    #define GCM_CACHE "gcm.cache"
+
+    #if defined(WIN)
+        string remove_gcm_cache_folder = "IF exist ." PATH_SEP GCM_CACHE " ( rmdir /s /q ." PATH_SEP GCM_CACHE " )";
+        err = system(remove_gcm_cache_folder.c_str());
+
+        // Error removing folder: 'gcm.cache'
+        if (err != 0) { error("the folder could not be removed { ." PATH_SEP GCM_CACHE " }"); }
+        else { cout << "new void { " CINFINITY ":" GCM_CACHE " }\n"; }
     #endif
 }
 

@@ -1,7 +1,5 @@
 #include <fstream>
 
-#define self (*this)
-
 // Windows (32/64 bits)
 #if defined(_WIN32) || defined(_WIN64)
     #define OS_WIN
@@ -17,12 +15,12 @@
 // Compilation: 'new' | 'new run'
 int main(int argc, char* argv[])
 {
-    std::ofstream cgen("./std/main.cgen");
     cinfinity::file file("./std/main.ci", std::fstream::in);
      file.linenum = 1;
      file.charnum = 0;
+    std::ofstream cgen("./std/main.cgen");
 
-    cinfinity::token  token;
+    cinfinity::token   token;
      INIT_TOKEN(token);
     cinfinity::scanner scanner;
     cinfinity::parser  parser;

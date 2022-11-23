@@ -23,6 +23,7 @@ namespace cinfinity
 
         bool _scan_file           (cinfinity::scanner&, cinfinity::file&, cinfinity::token&, cinfinity::error&);
         void _get_token_helper    (cinfinity::token&, cinfinity::error&);
+        void _error               (string, cinfinity::error&, fs&);
         void _error_expected_token(string, cinfinity::error&);
         void _token_write         (fs&, cinfinity::token&);
     };

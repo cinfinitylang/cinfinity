@@ -43,15 +43,15 @@ export namespace cinfinity
                 if (!_scan_file(scanner, file, token, error))
                 {
                     _error_expected_token("name", error);
-                    error.err("expected name for 'ft'");
+                    _error("expected name for 'ft'", error, cgen);
                 }
                 // Exist: name (for 'ft')
-                if (token.id != table::NAME) { error.err("illegal name for 'ft'"); }
+                if (token.id != table::NAME) { _error("illegal name for 'ft'", error, cgen); }
 
                 _token_write(cgen, token);
             }
             // Sentence: illegal
-            else { error.err("illegal sentence"); }
+            else { _error("illegal sentence", error, cgen); }
         }
     }
 
@@ -82,6 +82,13 @@ export namespace cinfinity
     // Backup-token for error-handler
     void parser::_get_token_helper(cinfinity::token &token, cinfinity::error &error) { error.token_helper = token; }
 
+    // Show error (diagnosis) and stop all + close output-file(s)
+    void parser::_error(string message, cinfinity::error &error, fs &file)
+    {
+        file.close(); // Close file (output), before of stop all
+        error.err(message);
+    }
+
     // Write in file '.cgen' (formatted: token-data)
     void parser::_token_write(fs &file, cinfinity::token &token)
     {
@@ -104,6 +111,6 @@ export namespace cinfinity
         }
 
         file << "{i:" << to_string(token.id) << ";v\"" << token_val << "\";l:" << to_string(token.linenum)
-            << ";c:" << to_string(token.charnum) << "}\n";
+             << ";c:" << to_string(token.charnum) << "}\n";
     }
 }

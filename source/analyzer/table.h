@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 // Table of tokens
 namespace table
 {

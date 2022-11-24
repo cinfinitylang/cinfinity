@@ -18,13 +18,14 @@ namespace cinfinity
         uint linenum;
         uint charnum;
         
+        file ();
         file (string, openmode);
         ~file();
 
-        void   open(string, openmode);
-        bool   contains();
-        char   get();
-        char   see();
+        void   open       (string, openmode);
+        bool   contains   ();
+        char   get        ();
+        char   see        ();
         string get_unicode();
         string see_unicode();
 

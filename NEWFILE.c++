@@ -52,10 +52,16 @@ vector<string> path_stdhs
     //"iostream",
 };
 
+// --- //
+
+// Command ('run'): compile + run | run-only
+#define RUN__COMPILE   true
+#define RUN__UNCOMPILE false
+
 // Prototypes
 void   error     (string);
 void   cmd_new   (void);
-void   cmd_run   (void);
+void   cmd_run   (bool);
 void   cmd_void  (void);
 void   cmd_header(string);
 string cmd_objs  (string, uint_fast64_t&);
@@ -72,13 +78,21 @@ int main(int argc, char* argv[])
         cmd_new();
         cout << "new { " CINFINITY " }\n";
     }
-    // Command: 'new run' (compile + run)
+    // Command: 'new run' (run-only)
     else if (string(argv[1]) == "run")
     {
         // Error: unexpected command (only 1-argument)
         if (argc > 2) { error(string("unexpected command { ") + argv[2] + " }"); }
 
-        cmd_run();
+        cmd_run(RUN__UNCOMPILE);
+    }
+    // Command: 'new prerun' (compile + run)
+    else if (string(argv[1]) == "prerun")
+    {
+        // Error: unexpected command (only 1-argument)
+        if (argc > 2) { error(string("unexpected command { ") + argv[2] + " }"); }
+
+        cmd_run(RUN__COMPILE);
     }
     // Command: 'new void' (clean directory)
     else if (string(argv[1]) == "void")
@@ -91,11 +105,11 @@ int main(int argc, char* argv[])
 // Show error (diagnosis) and stop all
 void error(string msg = "") { cerr << "error: " << msg << "\n"; exit(EXIT_FAILURE); }
 
-// Compile + run (C∞)
-void cmd_run(void)
+// Compile + run | run-only (C∞)
+void cmd_run(bool compile = RUN__COMPILE)
 {
     // Compile: C∞
-    cmd_new();
+    if (compile == RUN__COMPILE) { cmd_new(); }
 
     // Run: C∞
 

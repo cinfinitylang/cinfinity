@@ -28,6 +28,7 @@ namespace cinfinity
         string           path;
         cinfinity::token token;
         cinfinity::token token_helper;
+        cinfinity::token expected_token;
         bool             next_token_exist;
 
         #if defined(OS_WIN)

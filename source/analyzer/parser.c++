@@ -12,6 +12,7 @@ module;
 export module parser;
 
 using namespace std;
+using uint8  = uint_fast8_t;
 using string = string;
 using fs     = ofstream;
 
@@ -22,33 +23,82 @@ export namespace cinfinity
     void parser::parse(cinfinity::scanner &scanner, cinfinity::file &file, cinfinity::token &token, fs &cgen,
         cinfinity::error &error)
     {
-        recursive_parse(scanner, file, token, cgen, error, SCOPE__GLOBAL);
+        recursive_parse(scanner, file, token, cgen, error, scope::GLOBAL);
     }
 
     // Analyze next-sentence in file
     void parser::recursive_parse(cinfinity::scanner &scanner, cinfinity::file &file, cinfinity::token &token, fs &cgen,
-        cinfinity::error &error, bool scope = SCOPE__NESTED)
+        cinfinity::error &error, uint8 scope = scope::NESTED)
     {
-        while (_scan_file(scanner, file, token, error))
+        while (_scan_file(scanner, file, token, cgen, error, SCAN_CLEAN))
         {
             // Sentence: 'ft name(..): (..) { .. }'
             if (token.id == table::KEYWORD__FT)
             {
-                _get_token_helper(token, error); // Save: 1°-token (helper for error-diagnosis)
+                // ERROR: illegal scope (for 'ft')
+                if (scope != scope::GLOBAL) { _error("illegal scope for 'ft'", error, cgen); }
 
-                // Is: name ('ft name(..): (..) { .. }')
+                cgen << "!ft:\n";
+                error.token_helper = token; // Previous-token (helper for error-handler)
+
+                // IS: name ('ft name(..): (..) { .. }')
                 //               ↑--↑ name
 
-                // Unexist: name (for 'ft')
-                if (!_scan_file(scanner, file, token, error))
+                // ERROR: unexist
+                if (!_scan_file(scanner, file, token, cgen, error, SCAN_CLEAN))
                 {
-                    _error_expected_token("name", error);
+                    error.expected_token     = error.token_helper;
+                    error.expected_token.id  = table::NAME;
+                    error.expected_token.val = "name";
+                    _error_expected_token(error);
+
                     _error("expected name for 'ft'", error, cgen);
                 }
-                // Exist: name (for 'ft')
+                // ERROR: illegal
                 if (token.id != table::NAME) { _error("illegal name for 'ft'", error, cgen); }
+                error.token_helper = token; // Previous-token
+                _token_write(cgen, token); // Token: name
 
-                _token_write(cgen, token);
+                // IS: open-argument(s) ('ft name(..): (..) { .. }')
+                //                               ↑ '('
+
+                // ERROR: unexist
+                if (!_scan_file(scanner, file, token, cgen, error, SCAN_CLEAN))
+                {
+                    error.expected_token.id  = table::OPEN_PAREN;
+                    error.expected_token.val = '(';
+                    _error_expected_token(error);
+
+                    _error("expected open arguments for 'ft'", error, cgen);
+                }
+                // ERROR: illegal
+                if (token.id != table::OPEN_PAREN) { _error("illegal open-argument(s) for 'ft'", error, cgen); }
+                cgen << "!args:\n"; // Open arguments: ft name '('..) { .. }
+
+                // IS: close-argument(s) ('ft name(..): (..) { .. }')
+                //                                   ↑ ')'
+
+                // ERROR: unexist
+                if (!_scan_file(scanner, file, token, cgen, error, SCAN_CLEAN))
+                {
+                    error.expected_token.id  = table::CLOSE_PAREN;
+                    error.expected_token.val = ')';
+                    _error_expected_token(error);
+
+                    _error("expected close arguments for 'ft'", error, cgen);
+                }
+                // ERROR: illegal
+                if (token.id != table::CLOSE_PAREN && token.id != table::NAME)
+                 { _error("illegal argument name or close arguments for 'ft'", error, cgen); }
+
+                // Arguments
+                if (token.id != table::CLOSE_PAREN)
+                {
+                    recursive_parse(scanner, file, token, cgen, error, scope::ARGS); // Analyze: arguments (recursively)
+                }
+                cgen << "!args;\n"; // Close arguments: ft name (..')' { .. }
+
+                cgen << "!ft;\n";
             }
             // Sentence: illegal
             else { _error("illegal sentence", error, cgen); }
@@ -56,15 +106,28 @@ export namespace cinfinity
     }
 
     // Get next-token in file - (cleaned)
-    bool parser::_scan_file(cinfinity::scanner &scanner, cinfinity::file &file, cinfinity::token &token, cinfinity::error &error)
+    bool parser::_scan_file(cinfinity::scanner &scanner, cinfinity::file &file, cinfinity::token &token, fs &cgen,
+        cinfinity::error &error, bool mode = SCAN_CLEAN)
     {
         while (scanner.scan(file, token))
         {
             // Skip spaces and automatic-semicolons (';')
-            if (token.id == table::SPACE || token.id == table::AUTO_SEMICOLON) { continue; }
+            if ((token.id == table::SPACE || token.id == table::AUTO_SEMICOLON) && mode == SCAN_CLEAN) { continue; }
 
             // Token: code
-            error.token = token;
+            error.token = token; // Current-token
+
+            // Illegal (token): unfinished-strings ( ".. | '.. )
+            if (token.id == table::ILLEGAL_UNFINISHED__STR || token.id == table::ILLEGAL_UNFINISHED__STRCHAR)
+            {
+                _error("unfinished string", error, cgen);
+            }
+            // Illegal (token): unfinished-comment ( /*.. )
+            else if (token.id == table::ILLEGAL_UNFINISHED__CMT__MULTI_LINE)
+            {
+                _error("unfinished comment", error, cgen);
+            }
+
             return true;
         }
 
@@ -72,15 +135,12 @@ export namespace cinfinity
     }
 
     // New expected-token (error-diagnosis)
-    void parser::_error_expected_token(string expected_token, cinfinity::error &error)
+    void parser::_error_expected_token(cinfinity::error &error)
     {
-        error.next_token_exist      = NEXT_TOKEN__UNEXIST;
-        error.token_helper.charnum += (error.token_helper.val.size()+1); // '+1' = 1-space: ' ', (error: ft' 'expected-token)
-        error.token_helper.val      = expected_token;
+        error.next_token_exist      =  NEXT_TOKEN__UNEXIST;
+        error.token_helper.charnum += (error.token_helper.val.size()); // Size: 'token' expected-token (error-handler)
+        error.token_helper.val      =  error.expected_token.val;
     }
-
-    // Backup-token for error-handler
-    void parser::_get_token_helper(cinfinity::token &token, cinfinity::error &error) { error.token_helper = token; }
 
     // Show error (diagnosis) and stop all + close output-file(s)
     void parser::_error(string message, cinfinity::error &error, fs &file)
@@ -112,5 +172,20 @@ export namespace cinfinity
 
         file << "{i:" << to_string(token.id) << ";v\"" << token_val << "\";l:" << to_string(token.linenum)
              << ";c:" << to_string(token.charnum) << "}\n";
+    }
+
+    // Token is name-or-keyword?
+    bool parser::_is_name_or_keyword(uint8 id = table::ILLEGAL)
+    {
+        switch (id)
+        {
+            // Token: name or keywords
+            case table::NAME:           case table::KEYWORD__FT:   case table::KEYWORD__USE:    case table::KEYWORD__AS:
+            case table::KEYWORD__CLASS: case table::KEYWORD__VOID: case table::KEYWORD__BOOL:   case table::KEYWORD__CHAR:
+            case table::KEYWORD__STR:   case table::KEYWORD__NUM:  case table::KEYWORD__RETURN: case table::KEYWORD__MATCH:
+             { return true; }
+        }
+
+        return false;
     }
 }

@@ -1,5 +1,3 @@
-#include <fstream>
-
 // Windows (32/64 bits)
 #if defined(_WIN32) || defined(_WIN64)
     #define OS_WIN
@@ -20,15 +18,16 @@ int main(int argc, char* argv[])
      file.charnum = 0;
     std::ofstream cgen("./std/main.cgen");
 
+    cinfinity::parser  parser;
+    cinfinity::scanner scanner;
     cinfinity::token   token;
      INIT_TOKEN(token);
-    cinfinity::scanner scanner;
-    cinfinity::parser  parser;
 
     cinfinity::error error;
      INIT_ERROR(error);
      INIT_TOKEN(error.token);
      INIT_TOKEN(error.token_helper);
+     INIT_TOKEN(error.expected_token);
      error.path = "./std/main.ci";
      #if defined(OS_WIN)
         error.win_console = CONSOLE;

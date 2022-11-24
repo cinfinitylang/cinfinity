@@ -11,6 +11,7 @@ using openmode = ios::openmode;
 
 export namespace cinfinity
 {
+    file::file () {}
     file::file (string path, openmode mode) { open(path, mode);                       }
     file::~file()                           { if (_desc.is_open()) { _desc.close(); } }
 

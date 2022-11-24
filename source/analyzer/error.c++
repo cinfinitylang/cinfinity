@@ -163,8 +163,15 @@ namespace cinfinity
             else { cerr << error__token.val; }
 
             // Unexist: next-token
-            if (next_token_exist == NEXT_TOKEN__UNEXIST && error__token.charnum+1 == token.charnum)
+            if (next_token_exist == NEXT_TOKEN__UNEXIST && (error__token.charnum+error__token.val.size()) == token.charnum)
             {
+                // Between: names/numbers, add: ' ' - (error: token' 'expected-token)
+                if ((expected_token.id == table::NAME || expected_token.id == table::NUM) &&
+                    (expected_token.id == table::NAME || expected_token.id == table::NUM))
+                {
+                    token.val.insert(0, 1, ' '); // 1-space: ' ', (error: token' 'expected-token)
+                }
+
                 _error_color(token.val, ERROR__COLOR__EXPECT);
                 _error_color("",        ERROR__COLOR__STD); // Reset color: to standard
             }

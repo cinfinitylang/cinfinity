@@ -1,6 +1,7 @@
 # C∞ resources
 /_
 /gcm.cache
+*.cgen
 
 # Prerequisites
 *.d

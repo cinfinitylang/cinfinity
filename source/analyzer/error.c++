@@ -169,11 +169,13 @@ namespace cinfinity
                 if ((expected_token.id == table::NAME || expected_token.id == table::NUM) &&
                     (expected_token.id == table::NAME || expected_token.id == table::NUM))
                 {
+                    token.charnum++;
                     token.val.insert(0, 1, ' '); // 1-space: ' ', (error: token' 'expected-token)
                 }
 
                 _error_color(token.val, ERROR__COLOR__EXPECT);
                 _error_color("",        ERROR__COLOR__STD); // Reset color: to standard
+                break;
             }
 
             if (skip_first_whitespaces) { skip_first_whitespaces = false; }

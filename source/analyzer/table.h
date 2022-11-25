@@ -45,8 +45,10 @@ namespace table
         SEMICOLON,     // ;
         COLON,         // :
         DOT,           // .
+        DOUBLE_DOT,    // ..
         COMMA,         // ,
         DOUBLE_COLON,  // ::
+        INFINITY,      // ∞
 
         // Others
 

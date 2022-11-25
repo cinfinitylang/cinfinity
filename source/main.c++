@@ -1,3 +1,5 @@
+#include <iostream>
+
 // Windows (32/64 bits)
 #if defined(_WIN32) || defined(_WIN64)
     #define OS_WIN
@@ -13,12 +15,14 @@
 // Compilation: 'new' | 'new run'
 int main(int argc, char* argv[])
 {
-    cinfinity::file file("./std/main.ci", std::fstream::in);
+    std::string path_file = "./std/main.ci";
+    std::string path_cgen = "./std/main.cgen";
+
+    cinfinity::file file(path_file, std::fstream::in);
      file.linenum = 1;
      file.charnum = 0;
-    std::ofstream cgen("./std/main.cgen");
+    std::ofstream cgen(path_cgen);
 
-    cinfinity::parser  parser;
     cinfinity::scanner scanner;
     cinfinity::token   token;
      INIT_TOKEN(token);
@@ -32,9 +36,12 @@ int main(int argc, char* argv[])
      #if defined(OS_WIN)
         error.win_console = CONSOLE;
      #endif
+    
+    cinfinity::parser parser(scanner, file, token, cgen, error);
+    parser.path_cgen = path_cgen;
 
     // Analyze: C∞-code + get code
-    parser.parse(scanner, file, token, cgen, error);
+    parser.parse();
     
     cgen.close(); // Close: file '.cgen'
 }

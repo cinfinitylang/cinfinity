@@ -268,7 +268,6 @@ namespace cinfinity
 
                 // Token: symbol(s) //
                 break; case ';': token.id = table::SEMICOLON;     goto GOTO__GETC; // 'GOTO__GETC' : get character (in token-data)
-                       case '.': token.id = table::DOT;           goto GOTO__GETC;
                        case ',': token.id = table::COMMA;         goto GOTO__GETC;
                        case '(': token.id = table::OPEN_PAREN;    goto GOTO__GETC;
                        case ')': token.id = table::CLOSE_PAREN;   goto GOTO__GETC;
@@ -285,6 +284,21 @@ namespace cinfinity
                     token.linenum = file.linenum;
                     token.charnum = file.charnum;
                 }
+                break; case '.':
+                {
+                    token.id  = table::DOT;
+                    token.val = file.get();
+
+                    token.linenum = file.linenum;
+                    token.charnum = file.charnum;
+
+                    // Is: variable-range/quantity ( .. ) - ('∞'-alias)
+                    if (file.contains() && file.see() == '.')
+                    {
+                        token.id   = table::DOUBLE_DOT;
+                        token.val += file.get();
+                    }
+                }
                 break; case ':':
                 {
                     token.id  = table::COLON;
@@ -296,6 +310,7 @@ namespace cinfinity
                     // Is: namespace-separator '::' → 'namespace::namespace::name'
                     if (file.contains() && file.see() == ':')
                     {
+                        token.id   = table::DOUBLE_COLON;
                         token.val += file.get();
                     }
                 }
@@ -314,6 +329,11 @@ namespace cinfinity
                     else if (token.val == "↺")
                     {
                         token.id = table::CYCLE_REVERSE;
+                    }
+                    // Is: variable-range/quantity ('∞') - (( .. )-alias)
+                    else if (token.val == "∞")
+                    {
+                        token.id = table::INFINITY;
                     }
                     // Is: illegal
                     else { token.id = table::ILLEGAL; }

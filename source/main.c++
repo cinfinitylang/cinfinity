@@ -12,9 +12,17 @@
 #include "./analyzer/error.h"
 #include "./analyzer/table.h"
 
+import uchar;
+
 // Compilation: 'new' | 'new run'
 int main(int argc, char* argv[])
 {
+    wchar wchr = {(char)0xE0, (char)0xA4, (char)0x85, 0, 0, 0, 0, 0};
+    uchar uchr = wchar_to_uchar(wchr);
+    std::cout << "[" << uchr << ":" << ({ uchar_to_wchar(wchr, uchr);
+        std::string s(wchr.data(), wchr.size()); s; }) << "]";
+    return 0;
+
     std::string path_file = "./std/main.ci";
     std::string path_cgen = "./std/main.cgen";
 

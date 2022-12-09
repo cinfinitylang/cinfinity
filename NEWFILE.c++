@@ -30,12 +30,16 @@ using namespace std;
 #endif
 
 // Object files
-#define LIB      "lib"
-#define ANALYZER "analyzer"
+#define LIB          "lib"
+#define ANALYZER     "analyzer"
+#define STDCINFINITY "stdcinfinity"
 
 vector<string> path_files
  =
 {
+    // 'C∞ standard library in C++' (folder)
+    STDCINFINITY PATH_SEP "uchar",
+
     // 'lib' (folder)
     LIB PATH_SEP "file",
 

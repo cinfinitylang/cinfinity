@@ -71,4 +71,26 @@ ft main(): void
             print("Unexpected".n)
         }
     }
+
+    /* File contains:
+        Hello world!
+    */
+
+    file "path/file.txt" as c: char // Print: Hello world!
+    {
+        print(c)
+    }
+
+    file c: char ↺ "path/file.txt" // Print: !
+    {
+        file // Print: dlrow elloH
+        {
+            print(c)
+        }
+    }
+
+    str c: char ↺ "Hello world!" // Print: !dlrow elloH
+    {
+        print(c)
+    }
 }

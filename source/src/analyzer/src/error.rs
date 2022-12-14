@@ -1,46 +1,34 @@
-module;
-
-#include <iostream>
-
-#include "./scanner.h"
-#include "./table.h"
-#include "./error.h" // Self
-
-export module error;
-
-#if defined(OS_WIN)
-    #define ERROR__COLOR__STD      7
-    #define ERROR__COLOR__STD_HIGH 15
-    #define ERROR__COLOR__EXPECT   10
-    #define ERROR__COLOR__ERROR    12
-    #define ERROR__COLOR__WARNING  14
-#endif
+pub const NEXTOK_EXIST:   bool = true;
+pub const NEXTOK_UNEXIST: bool = false;
 
 // Type of problem (error | warning)
-#define PROBLEM__ERROR   true
-#define PROBLEM__WARNING false
+const PROBLEM_ERR:  bool = true;
+const PROBLEM_WARN: bool = false;
 
-#define PREFIX__ERROR   "error"
-#define PREFIX__WARNING "warning"
+const PREFIX_ERR:  &str = "error";
+const PREFIX_WARN: &str = "warning";
 
-using namespace std;
-using uint8 = uint_fast8_t;
-using uint  = uint_fast64_t;
-using fs    = fstream;
+pub struct Error {
+    path: String,
 
-namespace cinfinity
-{
-    // Show error (diagnosis/message) and stop all
-    void error::err(string message = "") { _problem(PROBLEM__ERROR, message); exit(EXIT_FAILURE); }
+    token:          Token,
+    token_helper:   Token,
+    expected_token: Token,
 
-    // Show warning (diagnosis/message) and continue
-    void error::warn(string message = "") { _problem(PROBLEM__WARNING, message); }
+    next_token_exist: bool,
+}
 
-    // Show problem (error | warning) - (diagnosis/message with format)
-    void error::_problem(bool problem_type = PROBLEM__ERROR, string message = "")
-    {
-        // Unexist: next-token
-        if (next_token_exist == NEXT_TOKEN__UNEXIST) { token = token_helper; }
+impl Error {
+    // Show error (diagnosis) and stop all
+    pub fn error(&self, msg: &str) { problem(PROBLEM_ERR, msg); panic!(); }
+
+    // Show warning (diagnosis) and continue
+    pub fn warning(&self, msg: &str) { problem(PROBLEM_WARN, msg); }
+
+    // Show problem (error | warning) (format)
+    fn problem(&self, problem_type: bool, msg: &str) {
+        // Unexist: next token
+        if (self.next_token_exist == NEXTOK_UNEXIST) { self.token = self.token_helper; }
 
         #if defined(OS_WIN)
             CONSOLE_SCREEN_BUFFER_INFO console_info;

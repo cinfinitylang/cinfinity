@@ -37,12 +37,7 @@ namespace wrapper
 
 namespace cinfinity
 {
-    struct parser
-    {
-        using uint8  = std::uint_fast8_t;
-        using string = std::string;
-        using fs     = std::ofstream;
-
+    struct parser {
         string path_cgen;
 
         cinfinity::scanner &scanner;

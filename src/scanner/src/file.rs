@@ -24,7 +24,7 @@ impl File {
         let c: char = self.content.remove(0);
 
         // Advance: file position
-        if c != '\n' { self.charnum += 1;              }
+        if c != '\n' { self.charnum += 1;                   }
         else         { self.linenum += 1; self.charnum = 0; }
 
         c

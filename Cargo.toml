@@ -1,9 +1,9 @@
 [package]
 
-name    = "source"
+name    = "cinfinity"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 
-analyzer = { path = "src/analyzer" }
+scanner = { path = "src/scanner" }

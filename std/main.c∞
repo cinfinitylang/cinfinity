@@ -1,5 +1,5 @@
 // Test main function
-ft main(in: []str, in: [10..100∞][][][][][]num(), in, in))
+ft main(in: []str, in: [10..100∞][][][][][]num(), in, in)): void
 {
     print("Hello world!".n)
 }

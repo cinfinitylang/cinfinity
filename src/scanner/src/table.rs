@@ -1,5 +1,7 @@
 // Table of tokens
 pub enum Table {
+    Nil, // Special token for checks
+
     // Keywords //
     Name, // var_name
 

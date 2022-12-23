@@ -166,12 +166,12 @@ impl Error {
         while scanner(&mut err_fs, &mut err_token) {
             val = err_token.val(Table::Nil as u8, "", &err_fs);
 
-            //  Other line                            ||   Skip 1°-whitespace(s) in error line
+            //  Other line                                 ||   Skip 1°-whitespace(s) in error line
             if self.token.linenum() != err_token.linenum() || ((err_token.id == Table::Space as u8 && skip_first_whitespaces) ||
                err_token.id == Table::Autosem as u8) { continue; }
             
             // Error line //
-
+            
             // Error token
             if self.token.charnum() == err_token.charnum() {
                 // Get: console position (error token)
@@ -195,7 +195,7 @@ impl Error {
                 // Between: names/numbers, add: ' ' (example of error with ' ': token' 'expected-token)
                 if (self.expected_token.id == Table::Name as u8 || self.expected_token.id == Table::Num as u8) &&
                    (self.expected_token.id == Table::Name as u8 || self.expected_token.id == Table::Num as u8) {
-                    self.token.count_charnum();
+                    self.token.count_charnum(1);
                     self.token.prepend(' '); // 1 space: ' ' (example: token' 'expected-token)
                 }
 

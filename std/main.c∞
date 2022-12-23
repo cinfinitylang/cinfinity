@@ -1,5 +1,5 @@
 // Test main function
-ft main(in: []str, in: [10..100∞][][][][][]num(), in, in)): void
+ft main(in: []str, in2: [9]num): void
 {
     print("Hello world!".n)
 }
@@ -92,5 +92,11 @@ ft main(): void
     str c: char ↺ "Hello world!" // Print: !dlrow elloH
     {
         print(c)
+    }
+
+    // Start server, request in threads
+    server "localhost:80" as req: request, resp: response
+    {
+        resp.content = "Hello world!".n
     }
 }

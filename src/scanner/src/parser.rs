@@ -1,225 +1,196 @@
-module;
+use std::io::prelude::*;
 
-#include <iostream>
+use super::{
+    file::File,
+    token::Token,
+    table::Table,
+    error::{
+        NEXTOK_UNEXIST,
+        Error,
+    },
+    scanner::scanner,
+};
 
-#include "../lib/file.h"
-#include "../lib/token.h"
-#include "./scanner.h"
-#include "./table.h"
-#include "./error.h"
-#include "./parser.h" // Self
+// Scan-mode (with/without space(s) or automatic semicolon(s) ';')
+const SCAN_CLEAN:   bool = true;
+const SCAN_UNCLEAN: bool = false;
 
-export module parser;
+// Wrapper type: '(' | '[' | '{' | '}' | ']' | ')'
+enum Wrapper {
+    Paren,   // (
+    Key,     // {
+    Bracket, // [
+        
+    Other, // Other token (not wrapper)
+}
 
-using namespace std;
-using uint8  = uint_fast8_t;
-using string = string;
-using fs     = ofstream;
+const ARRAY: &str = "vec";
+const OPEN:  &str = "{";
+const CLOSE: &str = "}";
+const N:     &str = "\n";
 
-#define DIR   "!"
-#define ARRAY "array"
-#define OPEN  "open:"
-#define CLOSE "close;"
+// Analyze file (syntactic analyzer)
+pub fn parser(fs: &mut File, token: &mut Token, fs_out: &mut std::fs::File, err: &mut Error) {
+    _recursive_parse2cgen(fs, token, fs_out, err, Wrapper::Other as u8);
+}
 
-#define N "\n"
+// Analyze: wrappers in file and write (in other file: '.cgen')
+fn _recursive_parse2cgen(fs: &mut File, token: &mut Token, fs_out: &mut std::fs::File, err: &mut Error, wrapper: u8) {
+    let mut exist: bool = false;
 
-// Syntactic analyzer for 1-file
-export namespace cinfinity
-{
-    parser::parser(cinfinity::scanner &scan, cinfinity::file &f, cinfinity::token &tok, fs &c, cinfinity::error &err)
-        : scanner(scan), file(f), token(tok), cgen(c), error(err) {}
+    while _scan_file(SCAN_CLEAN, fs, token, err) {
+        // If exist content, write '{', after '}'
+        if (wrapper == Wrapper::Paren as u8 || wrapper == Wrapper::Key as u8 || wrapper == Wrapper::Bracket as u8) && !exist
+            && !(token.id == Table::CloseParen as u8 || token.id == Table::CloseKey as u8 || token.id == Table::CloseBracket as u8)
+            { exist = true; fs_out.write_all((OPEN.to_string() + N).as_bytes()).unwrap(); }
+        
+        // Change: '[]' → 'vec'
+        else if wrapper == Wrapper::Bracket as u8 && !exist && token.id == Table::CloseBracket as u8
+            { fs_out.write_all((ARRAY.to_string() + N).as_bytes()).unwrap(); }
 
-    // Analyze 1-file (all)
-    void parser::parse()
-    {
-        _recursive__parse_to_cgen(wrapper::OTHER);
-    }
-
-    // Analyze: wrappers in file and write in other-file: '.cgen'
-    void parser::_recursive__parse_to_cgen(uint8 wrapper)
-    {
-        bool exist = false;
-
-        while (_scan_file(SCAN_CLEAN))
-        {
-            // Exist-content: write '!open:', after '!close;'
-            if ((wrapper == wrapper::PAREN || wrapper == wrapper::KEY || wrapper == wrapper::BRACKET) && !exist
-                && !(token.id == table::CLOSE_PAREN || token.id == table::CLOSE_KEY || token.id == table::CLOSE_BRACKET))
-             { exist = true; cgen << DIR OPEN N; }
-            // Change: '[]' → '!array'
-            else if (wrapper == wrapper::BRACKET && !exist && token.id == table::CLOSE_BRACKET) { cgen << DIR ARRAY N; }
-
-            // '(' → '( .. )'
-            //  ↑ --→ ↑
-            if (token.id == table::OPEN_PAREN)
-            {
-                _recursive__parse_to_cgen(wrapper::PAREN);
-                continue;
-            }
-            // '{' → '{ .. }'
-            //  ↑ --→ ↑
-            else if (token.id == table::OPEN_KEY)
-            {
-                _recursive__parse_to_cgen(wrapper::KEY);
-                continue;
-            }
-            // '[' → '[ .. ]'
-            //  ↑ --→ ↑
-            else if (token.id == table::OPEN_BRACKET)
-            {
-                _recursive__parse_to_cgen(wrapper::BRACKET);
-                continue;
-            }
-            // ')' → '( .. )'
-            //  ↑ -------→ ↑
-            else if (wrapper == wrapper::PAREN)
-            {
-                // Close
-                if (token.id == table::CLOSE_PAREN) { if (exist) { cgen << DIR CLOSE N; } return; }
-                // ERROR: unfinished
-                else if (token.id == table::CLOSE_KEY || token.id == table::CLOSE_BRACKET)
-                 { _error("illegal, expected close parenthesis: ')'"); }
-            }
-            // '}' → '{ .. }'
-            //  ↑ -------→ ↑
-            else if (wrapper == wrapper::KEY)
-            {
-                // Close
-                if (token.id == table::CLOSE_KEY) { if (exist) { cgen << DIR CLOSE N; } return; }
-                // ERROR: unfinished
-                else if (token.id == table::CLOSE_PAREN || token.id == table::CLOSE_BRACKET)
-                 { _error("illegal, expected close key: '}'"); }
-            }
-            // ']' → '[ .. ]'
-            //  ↑ -------→ ↑
-            else if (wrapper == wrapper::BRACKET)
-            {
-                // Close
-                if (token.id == table::CLOSE_BRACKET) { if (exist) { cgen << DIR CLOSE N; } return; }
-                // ERROR: unfinished
-                else if (token.id == table::CLOSE_PAREN || token.id == table::CLOSE_KEY)
-                 { _error("illegal, expected close bracket: ']'"); }
-            }
-
-            _token_write(); // Write token in '.cgen'
+        // '(' → '( .. )'
+        //  ↑ --→ ↑
+        if token.id == Table::OpenParen as u8 { _recursive_parse2cgen(fs, token, fs_out, err, Wrapper::Paren as u8);
+            continue; }
+        // '{' → '{ .. }'
+        //  ↑ --→ ↑
+        else if token.id == Table::OpenKey as u8 { _recursive_parse2cgen(fs, token, fs_out, err, Wrapper::Key as u8);
+            continue; }
+        // '[' → '[ .. ]'
+        //  ↑ --→ ↑
+        else if token.id == Table::OpenBracket as u8 { _recursive_parse2cgen(fs, token, fs_out, err, Wrapper::Bracket as u8);
+            continue; }
+        // ')' → '( .. )'
+        //  ↑ -------→ ↑
+        else if wrapper == Wrapper::Paren as u8 {
+            // Close
+            if token.id == Table::CloseParen as u8 { if exist { fs_out.write_all((CLOSE.to_string() + N).as_bytes()).unwrap(); } return; }
+            // ERROR: unfinished
+            else if token.id == Table::CloseKey as u8 || token.id == Table::CloseBracket as u8
+                { _error("illegal, expected close parenthesis: ')'", err); }
+        }
+        // '}' → '{ .. }'
+        //  ↑ -------→ ↑
+        else if wrapper == Wrapper::Key as u8 {
+            // Close
+            if token.id == Table::CloseKey as u8 { if exist { fs_out.write_all((CLOSE.to_string() + N).as_bytes()).unwrap(); } return; }
+            // ERROR: unfinished
+            else if token.id == Table::CloseParen as u8 || token.id == Table::CloseBracket as u8
+                { _error("illegal, expected close key: '}'", err); }
+        }
+        // ']' → '[ .. ]'
+        //  ↑ -------→ ↑
+        else if wrapper == Wrapper::Bracket as u8 {
+            // Close
+            if token.id == Table::CloseBracket as u8 { if exist { fs_out.write_all((CLOSE.to_string() + N).as_bytes()).unwrap(); } return; }
+            // ERROR: unfinished
+            else if token.id == Table::CloseParen as u8 || token.id == Table::CloseKey as u8
+                { _error("illegal, expected close bracket: ']'", err); }
         }
 
-        // Exist-content: write '!close;'
-        if (exist) { cgen << DIR CLOSE N; }
-
-        if (!_scan_file(SCAN_CLEAN))
-        {
-            // ')' → '( .. )'
-            //  ↑ -------→ ↑
-            if (wrapper == wrapper::PAREN)
-            {
-                _error_expected_token(")", table::CLOSE_PAREN);
-                _error("expected close parenthesis");
-            }
-            // '}' → '{ .. }'
-            //  ↑ -------→ ↑
-            else if (wrapper == wrapper::KEY)
-            {
-                _error_expected_token("}", table::CLOSE_KEY);
-                _error("expected close key");
-            }
-            // ']' → '[ .. ]'
-            //  ↑ -------→ ↑
-            else if (wrapper == wrapper::BRACKET)
-            {
-                _error_expected_token("]", table::CLOSE_BRACKET);
-                _error("expected close bracket");
-            }
-        }
+        _token_write(token, fs, fs_out); // Write token in '.cgen'
     }
 
-    // Get next-token in file - (cleaned)
-    bool parser::_scan_file(bool mode = SCAN_CLEAN)
-    {
-        while (scanner.scan(file, token))
-        {
-            // Skip spaces and automatic-semicolons (';')
-            if ((token.id == table::SPACE || token.id == table::AUTO_SEMICOLON) && mode == SCAN_CLEAN) { continue; }
+    // If exist content, exist '{', then: write '}'
+    if exist { fs_out.write_all((CLOSE.to_string() + N).as_bytes()).unwrap(); }
 
-            // Token: code
-            error.token_helper = token;
-            error.token        = token; // Current-token
+    if !_scan_file(SCAN_CLEAN, fs, token, err) {
+        // ')' → '( .. )'
+        //  ↑ -------→ ↑
+        if wrapper == Wrapper::Paren as u8 {
+            _error_expected_token(&")".to_string(), Table::CloseParen as u8, &fs, err);
+            _error("expected close parenthesis", err);
+        }
+        // '}' → '{ .. }'
+        //  ↑ -------→ ↑
+        else if wrapper == Wrapper::Key as u8 {
+            _error_expected_token(&"}".to_string(), Table::CloseKey as u8, &fs, err);
+            _error("expected close key", err);
+        }
+        // ']' → '[ .. ]'
+        //  ↑ -------→ ↑
+        else if wrapper == Wrapper::Bracket as u8 {
+            _error_expected_token(&"]".to_string(), Table::CloseBracket as u8, &fs, err);
+            _error("expected close bracket", err);
+        }
+    }
+}
 
-            // Illegal (token): unfinished-strings ( ".. | '.. )
-            if (token.id == table::ILLEGAL_UNFINISHED__STR || token.id == table::ILLEGAL_UNFINISHED__STRCHAR)
-            {
-                _error("unfinished string");
-            }
-            // Illegal (token): unfinished-comment ( /*.. )
-            else if (token.id == table::ILLEGAL_UNFINISHED__CMT__MULTI_LINE)
-            {
-                _error("unfinished comment");
-            }
+// Get next token in file
+fn _scan_file(mode: bool, fs: &mut File, token: &mut Token, err: &mut Error) -> bool {
+    while scanner(fs, token) {
+        // Skip spaces and auto-semicolons ';'
+        if (token.id == Table::Space as u8 || token.id == Table::Autosem as u8) && mode == SCAN_CLEAN { continue; }
 
-            return true;
+        // Token: code
+        err.token_helper = token.clone();
+        err.token        = token.clone(); // Current token
+
+        // Illegal (token): unfinished strings ( ".. | '.. )
+        if token.id == Table::IllegalUnfinishedStr as u8 || token.id == Table::IllegalUnfinishedStrchar as u8 {
+            _error("unfinished string", err);
+        
+        // Illegal (token): unfinished comment ( /*.. )
+        } else if token.id == Table::IllegalUnfinishedCmtMultiline as u8 {
+            _error("unfinished comment", err);
         }
 
-        return false;
+        return true;
     }
+
+    false
+}
 
     // New expected-token (error-diagnosis)
-    void parser::_error_expected_token(string expected_token, uint8 id)
-    {
-        error.next_token_exist      =  NEXT_TOKEN__UNEXIST;
-        error.token_helper.charnum += (error.token_helper.val.size()); // Size: 'token' expected-token (error-handler)
-        error.token_helper.val      = (error.expected_token.val = expected_token);
-        error.expected_token.id     =  id;
-    }
+fn _error_expected_token(expected_token: &String, id: u8, fs: &File, err: &mut Error) {
+    let tokhelper_len: u64 = err.token_helper.val(Table::Nil as u8, "", &fs).len() as u64;
 
-    // Show error (diagnosis) and stop all + close output-file(s)
-    void parser::_error(string message)
-    {
-        // Close file (output) and remove
-        cgen.close();
-        remove(path_cgen.c_str());
+    err.next_token_exist = NEXTOK_UNEXIST;
+    err.token_helper.count_charnum(tokhelper_len); // Size: 'token' expected-token (error-handler)
+    err.token_helper.new_val({ err.expected_token.new_val(expected_token); &err.expected_token.val(Table::Nil as u8, "", &fs) });
+    err.expected_token.id = id;
+}
+
+// Show error and stop all
+fn _error(msg: &str, err: &mut Error) {
+    // Remove file (output)
+    std::fs::remove_file(err.path.as_str()).unwrap();
+    
+    err.error(msg);
+}
+
+// Write in file '.cgen' (formatted: token-data)
+fn _token_write(token: &mut Token, fs: &mut File, fs_out: &mut std::fs::File) {
+    let mut token_val: String = String::new();
         
-        error.err(message);
-    }
+    // Token without changes
+    if token.id != Table::Str as u8 {
+        token_val = token.val(Table::Nil as u8, "", &fs);
+    
+    // Replace: ", with: \"
+    } else {
+        for c in token.val(Table::Nil as u8, "", &fs).chars() {
+            if c == '"' { token_val.push_str("\\\""); continue; } // Replace
 
-    // Write in file '.cgen' (formatted: token-data)
-    void parser::_token_write()
-    {
-        string token_val = "";
-        
-        // Token without-changes
-        if (token.id != table::STR)
-        {
-            token_val = token.val;
+            // Character Without changes in ".."
+            token_val.push(c);
         }
-        // Replace: ( " ), with: ( \" )
-        else {
-            for (char c : token.val)
-            {
-                if (c == '"') { token_val += "\\\""; continue; } // Replace
-
-                // Character Without-changes (in "..")
-                token_val += c;
-            }
-        }
-
-        cgen << "{i:" << to_string(token.id) << ";v:\"" << token_val << "\";l:" << to_string(token.linenum)
-             << ";c:" << to_string(token.charnum) << "}\n";
     }
+    
+    fs_out.write_all(format!("i:{}|v:\"{}\"|l:{}|c:{}\n",
+        token.id, token_val, token.linenum(), token.charnum()).as_bytes()).unwrap();
+}
 
-    // Token is name-or-keyword?
-    bool parser::_is_name_or_keyword(uint8 id = table::ILLEGAL)
-    {
-        switch (id)
-        {
-            // Token: name or keywords
-            case table::NAME:           case table::KEYWORD__FT:   case table::KEYWORD__USE:    case table::KEYWORD__AS:
-            case table::KEYWORD__CLASS: case table::KEYWORD__VOID: case table::KEYWORD__BOOL:   case table::KEYWORD__CHAR:
-            case table::KEYWORD__STR:   case table::KEYWORD__NUM:  case table::KEYWORD__RETURN: case table::KEYWORD__MATCH:
-             { return true; }
-        }
+// Token is: name or keyword?
+fn _is_name_or_keyword(id: u8) -> bool {
+    // Token: name or keywords
+    if  id == Table::Name      as u8 || id == Table::KeyFT     as u8 || id == Table::KeyUSE   as u8 ||
+        id == Table::KeyAS     as u8 || id == Table::KeyCLASS  as u8 || id == Table::KeyVOID  as u8 ||
+        id == Table::KeyBOOL   as u8 || id == Table::KeyCHAR   as u8 || id == Table::KeySTR   as u8 ||
+        id == Table::KeyNUM    as u8 || id == Table::KeyRETURN as u8 || id == Table::KeyMATCH as u8 { return true; }
 
-        return false;
-    }
+    false
+}
 
     /*
     // Analyze next-sentence in file
@@ -347,5 +318,4 @@ export namespace cinfinity
             else { _error("illegal sentence"); }
         }
     }
-    */
-}
+*/

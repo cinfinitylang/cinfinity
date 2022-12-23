@@ -42,6 +42,9 @@ impl Token {
         self._val.clone()
     }
 
+    // Assign only-value
+    pub fn new_val(&mut self, val: &String) { self._val = val.clone(); }
+
     // Add at the end to value
     pub fn push(&mut self, c: char) { self._val.push(c); }
 
@@ -55,5 +58,5 @@ impl Token {
     pub const fn charnum(&self) -> u64 { self._charnum }
 
     // Count character number
-    pub fn count_charnum(&mut self) { self._charnum += 1; }
+    pub fn count_charnum(&mut self, add: u64) { self._charnum += add; }
 }
